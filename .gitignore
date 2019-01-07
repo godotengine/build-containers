@@ -1,0 +1,9 @@
+*.tar
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.exe
+*.swp
+*.dmg
+*.zip
+*.xip

@@ -1,0 +1,49 @@
+ARG mono_version
+FROM godot-mono:${mono_version}
+ARG mono_version
+
+RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi
+
+RUN dnf -y install automake autoconf bzip2-devel clang git libicu-devel libtool libxml2-devel llvm-devel make openssl-devel patch scons xz bzip2 && dnf clean all && \
+    git clone https://github.com/tpoechtrager/osxcross.git && \
+    cd /root/osxcross && \
+    ln -s /root/files/MacOSX10.13.sdk.tar.xz /root/osxcross/tarballs && \
+    UNATTENDED=1 ./build.sh ;\
+    cd /root && \
+    git clone https://github.com/tpoechtrager/apple-libtapi.git && \
+    cd apple-libtapi && \
+    INSTALLPREFIX=/root/osxcross/target ./build.sh && ./install.sh && \
+    cd /root && \
+    git clone https://github.com/tpoechtrager/cctools-port.git && \
+    cd cctools-port/cctools/ && \
+    ./configure --prefix=/root/osxcross/target --target=x86_64-apple-darwin17 --with-libtapi=/root/osxcross/target && \
+    make -j && make install && \
+    cd /root && \
+    ln -fs /root/osxcross/target/bin/x86_64-apple-darwin17-install_name_tool /root/osxcross/target/bin/install_name_tool && \
+    ln -fs /root/osxcross/target/bin/x86_64-apple-darwin17-ar /root/osxcross/target/bin/ar && \
+    curl https://download.mono-project.com/sources/mono/mono-${mono_version}.tar.bz2 | tar xj && \
+    cd mono-${mono_version} && \
+    patch -p1 < /root/files/patches/fix-mono-configure.diff && \
+    export PATH=/root/osxcross/target/bin:$PATH && \
+    ./autogen.sh --prefix=/root/dependencies/mono \
+        --build=x86_64-linux-gnu \
+        --host=x86_64-apple-darwin17 \
+        --disable-boehm \
+        --disable-mcs-build \
+        --with-tls=pthread \
+        --disable-dtrace \
+        mono_cv_uscore=yes \
+        _lt_dar_can_shared=yes \
+        CC=o64-clang \
+        CXX=o64-clang++ && \
+    sed -i 's/^BTLS_CMAKE_ARGS.*/BTLS_CMAKE_ARGS=-DBTLS_ARCH="x86_64" -DAPPLE=1 -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_AR:FILEPATH=ar/' mono/btls/Makefile && \
+    make -j && \
+    make install && \
+    rm -f /root/dependencies/mono/bin/mono /root/dependencies/mono/bin/mono-sgen && \
+    ln -s /usr/bin/mono /root/dependencies/mono/bin/mono && \
+    ln -s /usr/bin/mono-sgen /root/dependencies/mono/bin/mono-sgen && \
+    ln -sf /usr/lib/mono/* /root/dependencies/mono/lib/mono ;\
+    cp -rvp /etc/mono /root/dependencies/mono/etc && \
+    rm -rf /root/mono-${mono_version} /root/apple-libtapi /root/cctools-port
+
+CMD ['/bin/bash']

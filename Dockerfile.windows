@@ -1,0 +1,32 @@
+ARG mono_version
+FROM godot-mono:${mono_version}
+ARG mono_version
+
+RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi
+
+RUN dnf -y install scons mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static mingw64-gcc mingw64-gcc-c++ mingw64-winpthreads-static && dnf clean all && \
+    curl https://download.mono-project.com/sources/mono/mono-${mono_version}.tar.bz2 | tar xj && \
+    cd mono-${mono_version} && \
+    ./configure --prefix=/root/dependencies/mono-64 --host=x86_64-w64-mingw32 --disable-boehm --disable-mcs-build && \
+    make -j && \
+    make install && \
+    make distclean && \
+    cp /root/dependencies/mono-64/bin/libMonoPosixHelper.dll /root/dependencies/mono-64/bin/MonoPosixHelper.dll && \
+    rm -f /root/dependencies/mono-64/bin/mono /root/dependencies/mono-64/bin/mono-sgen && \
+    ln -s /usr/bin/mono /root/dependencies/mono-64/bin/mono && \
+    ln -s /usr/bin/mono-sgen /root/dependencies/mono-64/bin/mono-sgen && \
+    ln -sf /usr/lib/mono/* /root/dependencies/mono-64/lib/mono || /bin/true && \
+    cp -rvp /etc/mono /root/dependencies/mono-64/etc && \
+    ./configure --prefix=/root/dependencies/mono-32 --host=i686-w64-mingw32 --disable-boehm --disable-mcs-build && \
+    make -j && \
+    make install && \
+    make distclean && \
+    cp /root/dependencies/mono-32/bin/libMonoPosixHelper.dll /root/dependencies/mono-32/bin/MonoPosixHelper.dll && \
+    rm -f /root/dependencies/mono-32/bin/mono /root/dependencies/mono-32/bin/mono-sgen && \
+    ln -s /usr/bin/mono /root/dependencies/mono-32/bin/mono && \
+    ln -s /usr/bin/mono-sgen /root/dependencies/mono-32/bin/mono-sgen && \
+    ln -sf /usr/lib/mono/* /root/dependencies/mono-32/lib/mono || /bin/true && \
+    cp -rvp /etc/mono /root/dependencies/mono-32/etc && \
+    rm -rf /root/mono-${mono_version}
+
+CMD ['/bin/bash']
