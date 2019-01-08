@@ -7,6 +7,19 @@ if ! which $podman; then
   podman=docker
 fi
 
+if ! which $podman; then
+  echo "Either podman or docker need to be in PATH for this script to work."
+  exit 1
+fi
+
+if [ -z "$1" ]; then
+  echo "usage: $0 <mono version"
+  echo 
+  echo "For example: $0 5.16.0.220"
+  echo
+  exit 1
+fi
+
 mono_version=$1
 
 $podman build -t godot-fedora:latest -f Dockerfile.base
@@ -42,7 +55,7 @@ if [ ! -e files/msvc2017.tar ]; then
   echo "The required components can be installed by running"
   echo "vs_buildtools.exe --add Microsoft.VisualStudio.Workload.UniversalBuildTools --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.Windows10SDK.16299.Desktop --add Microsoft.VisualStudio.Component.Windows10SDK.16299.UWP.Native --passive"
   echo "after that create a zipfile of C:/Program Files (x86)/Microsoft Visual Studio"
-  echo "tar -cf msvs.tar -C \"c:/Program Files (x86)\" Microsoft Visual Studio"
+  echo "tar -cf msvc2017.tar -C \"c:/Program Files (x86)/ Microsoft Visual Studio\""
   echo
   exit 1
 fi
