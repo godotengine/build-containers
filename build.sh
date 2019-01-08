@@ -22,18 +22,18 @@ fi
 
 mono_version=$1
 
-$podman build -t godot-fedora:latest -f Dockerfile.base
+$podman build -t godot-fedora:latest -f Dockerfile.base .
 
-$podman build --build-arg mono_version=${mono_version} -t godot-mono:${mono_version} -f Dockerfile.mono
-$podman build --build-arg mono_version=${mono_version} -t godot-mono-glue:latest -f Dockerfile.mono-glue
-$podman build --build-arg mono_version=${mono_version} -t godot-windows:latest -f Dockerfile.windows
-$podman build --build-arg mono_version=${mono_version} -t godot-ubuntu-32:latest -f Dockerfile.ubuntu-32
-$podman build --build-arg mono_version=${mono_version} -t godot-ubuntu-64:latest -f Dockerfile.ubuntu-64
+$podman build --build-arg mono_version=${mono_version} -t godot-mono:${mono_version} -f Dockerfile.mono .
+$podman build --build-arg mono_version=${mono_version} -t godot-mono-glue:latest -f Dockerfile.mono-glue .
+$podman build --build-arg mono_version=${mono_version} -t godot-windows:latest -f Dockerfile.windows .
+$podman build --build-arg mono_version=${mono_version} -t godot-ubuntu-32:latest -f Dockerfile.ubuntu-32 .
+$podman build --build-arg mono_version=${mono_version} -t godot-ubuntu-64:latest -f Dockerfile.ubuntu-64 .
 
-$podman build -t godot-android:latest -f Dockerfile.android
-$podman build -t godot-javascript:latest -f Dockerfile.javascript
+$podman build -t godot-android:latest -f Dockerfile.android .
+$podman build -t godot-javascript:latest -f Dockerfile.javascript .
 
-$podman build -t godot-xcode-packer:latest -f Dockerfile.xcode -v $(pwd)/files:/root/files
+$podman build -t godot-xcode-packer:latest -f Dockerfile.xcode -v $(pwd)/files:/root/files .
 
 if [ ! -e files/MacOSX10.13.sdk.tar.xz ] || [ ! -e files/iPhoneOS11.2.sdk.tar.xz ] || [ ! -e files/iPhoneSimulator11.2.sdk.tar.xz ]; then
   if [ ! -e files/Xcode_9.2.xip ]; then
@@ -45,8 +45,8 @@ if [ ! -e files/MacOSX10.13.sdk.tar.xz ] || [ ! -e files/iPhoneOS11.2.sdk.tar.xz
   $podman run -it --rm -v $(pwd)/files:/root/files godot-xcode-packer:latest
 fi
 
-$podman build -t godot-ios:latest -f Dockerfile.ios -v $(pwd)/files:/root/files
-$podman build --build-arg mono_version=${mono_version} -t godot-osx:latest -f Dockerfile.osx -v $(pwd)/files:/root/files
+$podman build -t godot-ios:latest -f Dockerfile.ios -v $(pwd)/files:/root/files .
+$podman build --build-arg mono_version=${mono_version} -t godot-osx:latest -f Dockerfile.osx -v $(pwd)/files:/root/files .
 
 if [ ! -e files/msvc2017.tar ]; then
   echo 
@@ -60,4 +60,4 @@ if [ ! -e files/msvc2017.tar ]; then
   exit 1
 fi
 
-$podman build -t godot-msvc:latest -f Dockerfile.msvc -v $(pwd)/files:/root/files
+$podman build -t godot-msvc:latest -f Dockerfile.msvc -v $(pwd)/files:/root/files .
