@@ -13,6 +13,7 @@ if [ -z "${registry}" ]; then
   registry=registry.prehensile-tales.com
 fi
 
+$podman push godot-export:latest ${registry}/godot/export
 $podman push godot-mono-glue:latest ${registry}/godot/mono-glue
 $podman push godot-windows:latest ${registry}/godot/windows
 $podman push godot-ubuntu-32:latest ${registry}/godot/ubuntu-32

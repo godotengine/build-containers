@@ -23,6 +23,7 @@ fi
 mono_version=$1
 
 $podman build -t godot-fedora:latest -f Dockerfile.base .
+$podman build -t godot-export:latest -f Dockerfile.export .
 
 $podman build --build-arg mono_version=${mono_version} -t godot-mono:${mono_version} -f Dockerfile.mono .
 $podman build --build-arg mono_version=${mono_version} -t godot-mono-glue:latest -f Dockerfile.mono-glue .
