@@ -44,6 +44,10 @@ RUN dnf -y install automake autoconf bzip2-devel clang git libicu-devel libtool 
     ln -s /usr/bin/mono-sgen /root/dependencies/mono/bin/mono-sgen && \
     ln -sf /usr/lib/mono/* /root/dependencies/mono/lib/mono ;\
     cp -rvp /etc/mono /root/dependencies/mono/etc && \
+    cp /root/files/mono-config-macosx /root/dependencies/mono/etc/config && \
     rm -rf /root/mono-${mono_version} /root/apple-libtapi /root/cctools-port
+
+ENV MONO64_PREFIX=/root/dependencies/mono
+ENV OSXCROSS_ROOT=/root/osxcross
 
 CMD ['/bin/bash']

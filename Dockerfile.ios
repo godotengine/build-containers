@@ -16,4 +16,6 @@ RUN dnf -y install automake autoconf clang gcc gcc-c++ gcc-objc gcc-objc++ cmake
     mkdir /root/ioscross/x86_64/usr && \
     ln -s /root/ioscross/x86_64/bin /root/ioscross/x86_64/usr/bin
 
+ENV OSXCROSS_IOS=not_nothing
+
 CMD ['/bin/bash']
