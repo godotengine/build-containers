@@ -4,7 +4,7 @@ ARG mono_version
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi
 
-RUN dnf -y install automake autoconf bzip2-devel clang git libicu-devel libtool libxml2-devel llvm-devel make openssl-devel patch scons xz bzip2 && dnf clean all && \
+RUN dnf -y install automake autoconf bzip2-devel clang git libicu-devel libtool libxml2-devel llvm-devel make openssl-devel patch scons xz bzip2 yasm && dnf clean all && \
     git clone https://github.com/tpoechtrager/osxcross.git && \
     cd /root/osxcross && \
     ln -s /root/files/MacOSX10.13.sdk.tar.xz /root/osxcross/tarballs && \

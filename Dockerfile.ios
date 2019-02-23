@@ -1,6 +1,6 @@
 FROM godot-fedora:latest
 
-RUN dnf -y install automake autoconf clang gcc gcc-c++ gcc-objc gcc-objc++ cmake git libicu-devel libtool libxml2-devel llvm-devel make openssl-devel patch perl python scons xz && \
+RUN dnf -y install automake autoconf clang gcc gcc-c++ gcc-objc gcc-objc++ cmake git libicu-devel libtool libxml2-devel llvm-devel make openssl-devel patch perl python scons xz yasm && \
     git clone https://github.com/tpoechtrager/cctools-port.git && \
     cd /root/cctools-port && \
     sed -i 's#./autogen.sh#libtoolize -c -i --force\n./autogen.sh#' usage_examples/ios_toolchain/build.sh && \

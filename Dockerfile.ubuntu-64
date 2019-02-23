@@ -11,7 +11,7 @@ RUN apt-get update && \
     echo 'deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main' >> /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y gcc-8 g++-8 libudev-dev libx11-dev libxcursor-dev libxrandr-dev libasound2-dev libpulse-dev \
-            libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev libxi-dev libxinerama-dev git scons cmake perl make bzip2 && \
+            libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev libxi-dev libxinerama-dev git scons cmake perl make bzip2 yasm && \
     ln -sf /usr/bin/gcc-ranlib-8 /usr/bin/gcc-ranlib && \
     ln -sf /usr/bin/gcc-ar-8 /usr/bin/gcc-ar && \
     ln -sf /usr/bin/gcc-8 /usr/bin/gcc && \

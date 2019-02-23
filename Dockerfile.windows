@@ -4,7 +4,7 @@ ARG mono_version
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi
 
-RUN dnf -y install scons mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static mingw64-gcc mingw64-gcc-c++ mingw64-winpthreads-static && dnf clean all && \
+RUN dnf -y install scons mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static mingw64-gcc mingw64-gcc-c++ mingw64-winpthreads-static yasm && dnf clean all && \
     curl https://download.mono-project.com/sources/mono/mono-${mono_version}.tar.bz2 | tar xj && \
     cd mono-${mono_version} && \
     ./configure --prefix=/root/dependencies/mono-64 --host=x86_64-w64-mingw32 --disable-boehm --disable-mcs-build && \
