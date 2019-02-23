@@ -8,6 +8,7 @@ RUN dnf -y install scons mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static 
     curl https://download.mono-project.com/sources/mono/mono-${mono_version}.tar.bz2 | tar xj && \
     cd mono-${mono_version} && \
     ./configure --prefix=/root/dependencies/mono-64 --host=x86_64-w64-mingw32 --disable-boehm --disable-mcs-build && \
+    echo '#define HAVE_STRUCT_SOCKADDR_IN6 1' >> config.h && \
     make -j && \
     make install && \
     make distclean && \
@@ -18,6 +19,7 @@ RUN dnf -y install scons mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static 
     ln -sf /usr/lib/mono/* /root/dependencies/mono-64/lib/mono || /bin/true && \
     cp -rvp /etc/mono /root/dependencies/mono-64/etc && \
     ./configure --prefix=/root/dependencies/mono-32 --host=i686-w64-mingw32 --disable-boehm --disable-mcs-build && \
+    echo '#define HAVE_STRUCT_SOCKADDR_IN6 1' >> config.h && \
     make -j && \
     make install && \
     make distclean && \
