@@ -1,6 +1,6 @@
 FROM godot-fedora:latest
 
-RUN dnf -y install scons java-1.8.0-openjdk-devel ncurses-compat-libs unzip which && \
+RUN dnf -y install scons java-1.8.0-openjdk-devel ncurses-compat-libs unzip which gcc gcc-c++ && \
     curl -LO https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip && \
     unzip sdk-tools-linux-4333796.zip && \
     rm sdk-tools-linux-4333796.zip && \
