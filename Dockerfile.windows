@@ -10,7 +10,7 @@ RUN dnf -y install scons mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static 
                            /root/files/mingw32-binutils-2.30-5.fc29.godot.x86_64.rpm && \
     curl https://download.mono-project.com/sources/mono/mono-${mono_version}.tar.bz2 | tar xj && \
     cd mono-${mono_version} && \
-    ./configure --prefix=/root/dependencies/mono-64 --host=x86_64-w64-mingw32 --disable-boehm --disable-mcs-build && \
+    ./configure --prefix=/root/dependencies/mono-64 --host=x86_64-w64-mingw32 --disable-boehm --disable-mcs-build --disable-executables && \
     echo '#define HAVE_STRUCT_SOCKADDR_IN6 1' >> config.h && \
     make -j && \
     make install && \
@@ -21,7 +21,7 @@ RUN dnf -y install scons mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static 
     ln -s /usr/bin/mono-sgen /root/dependencies/mono-64/bin/mono-sgen && \
     ln -sf /usr/lib/mono/* /root/dependencies/mono-64/lib/mono || /bin/true && \
     cp -rvp /etc/mono /root/dependencies/mono-64/etc && \
-    ./configure --prefix=/root/dependencies/mono-32 --host=i686-w64-mingw32 --disable-boehm --disable-mcs-build && \
+    ./configure --prefix=/root/dependencies/mono-32 --host=i686-w64-mingw32 --disable-boehm --disable-mcs-build --disable-executables && \
     echo '#define HAVE_STRUCT_SOCKADDR_IN6 1' >> config.h && \
     make -j && \
     make install && \
