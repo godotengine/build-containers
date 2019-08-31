@@ -28,8 +28,13 @@ RUN dnf -y install automake autoconf bzip2-devel clang git libicu-devel libtool 
     mkdir -p ${CLANG_LIB_DIR}/lib/darwin && \
     cp -rv /root/osxcross/build/compiler-rt/include/sanitizer ${CLANG_LIB_DIR}/include && \
     cp -v /root/osxcross/build/compiler-rt/build/lib/darwin/*.a ${CLANG_LIB_DIR}/lib/darwin && \
-    cp -v /root/osxcross/build/compiler-rt/build/lib/darwin/*.dylib ${CLANG_LIB_DIR}/lib/darwin && \
-    curl https://download.mono-project.com/sources/mono/mono-${mono_version}.tar.bz2 | tar xj && \
+    cp -v /root/osxcross/build/compiler-rt/build/lib/darwin/*.dylib ${CLANG_LIB_DIR}/lib/darwin
+
+RUN if [ ${mono_version%%.*} -ge 6 ]; then \
+        curl https://download.mono-project.com/sources/mono/mono-${mono_version}.tar.xz | tar xJ; \
+    else \
+        curl https://download.mono-project.com/sources/mono/mono-${mono_version}.tar.bz2 | tar xj; \
+    fi && \
     cd mono-${mono_version} && \
     patch -p1 < /root/files/patches/fix-mono-configure.diff && \
     export PATH=/root/osxcross/target/bin:$PATH && \
