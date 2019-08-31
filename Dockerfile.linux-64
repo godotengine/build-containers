@@ -1,0 +1,32 @@
+FROM centos:7
+
+ARG mono_version
+
+RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
+    yum update && \
+    yum install -y centos-release-scl && \
+    yum install -y devtoolset-8-toolchain && \
+    echo "source scl_source enable devtoolset-8" >> /root/.bashrc && \
+    yum install -y git scons pkgconfig libX11-devel libXcursor-devel libXrandr-devel libXinerama-devel libXi-devel \
+            mesa-libGL-devel mesa-libGLU-devel alsa-lib-devel pulseaudio-libs-devel libudev-devel yasm && \
+    yum install -y automake autoconf bzip2 libtool cmake curl make patch perl python which xz && \
+    yum clean all && \
+    source /root/.bashrc && which gcc && which g++ && \
+    cd /root && \
+    if [ ${mono_version%%.*} -ge 6 ]; then \
+        curl https://download.mono-project.com/sources/mono/mono-${mono_version}.tar.xz | tar xJ; \
+    else \
+        curl https://download.mono-project.com/sources/mono/mono-${mono_version}.tar.bz2 | tar xj; \
+    fi && \
+    cd mono-${mono_version} && \
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var/lib/mono --disable-boehm --host=x86_64-linux-gnu && \
+    make -j && \
+    make install && \
+    cert-sync /etc/pki/tls/certs/ca-bundle.crt && \
+    rm -rf /root/mono-${mono_version} && \
+    rpm -ivh --nodeps https://download.mono-project.com/repo/centos7-stable/m/msbuild/msbuild-16.1+xamarinxplat.2019.06.05.11.19-0.xamarin.4.epel7.noarch.rpm \
+                      https://download.mono-project.com/repo/centos7-stable/m/msbuild/msbuild-sdkresolver-16.1+xamarinxplat.2019.06.05.11.19-0.xamarin.4.epel7.noarch.rpm \
+                      https://download.mono-project.com/repo/centos7-stable/m/msbuild-libhostfxr/msbuild-libhostfxr-3.0.0.2019.04.16.02.13-0.xamarin.4.epel7.x86_64.rpm \
+                      https://download.mono-project.com/repo/centos7-stable/n/nuget/nuget-5.1.0.6013.bin-0.xamarin.1.epel7.noarch.rpm
+
+CMD ['/bin/bash']

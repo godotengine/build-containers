@@ -14,7 +14,7 @@ fi
 
 if [ -z "$1" ]; then
   echo "usage: $0 <mono version"
-  echo 
+  echo
   echo "For example: $0 5.16.0.220"
   echo
   exit 1
@@ -29,7 +29,8 @@ $podman build --build-arg mono_version=${mono_version} -t godot-mono:${mono_vers
 $podman build --build-arg mono_version=${mono_version} -t godot-mono-glue:latest -f Dockerfile.mono-glue .
 $podman build --build-arg mono_version=${mono_version} -v $(pwd)/files:/root/files -t godot-windows:latest -f Dockerfile.windows .
 $podman build --build-arg mono_version=${mono_version} -t godot-ubuntu-32:latest -f Dockerfile.ubuntu-32 .
-$podman build --build-arg mono_version=${mono_version} -t godot-ubuntu-64:latest -f Dockerfile.ubuntu-64 .
+#$podman build --build-arg mono_version=${mono_version} -t godot-ubuntu-64:latest -f Dockerfile.ubuntu-64 .
+$podman build --build-arg mono_version=${mono_version} -t godot-linux-64:latest -f Dockerfile.linux-64 .
 
 $podman build -t godot-android:latest -f Dockerfile.android .
 $podman build -t godot-javascript:latest -f Dockerfile.javascript .
