@@ -36,9 +36,9 @@ $podman build -t godot-javascript:latest -f Dockerfile.javascript .
 
 $podman build -t godot-xcode-packer:latest -f Dockerfile.xcode -v $(pwd)/files:/root/files .
 
-if [ ! -e files/MacOSX10.13.sdk.tar.xz ] || [ ! -e files/iPhoneOS11.2.sdk.tar.xz ] || [ ! -e files/iPhoneSimulator11.2.sdk.tar.xz ]; then
-  if [ ! -e files/Xcode_9.2.xip ]; then
-    echo "files/Xcode_9.2.xip is required. It can be downloaded from https://developer.apple.com/download/more/ with a valid apple ID"
+if [ ! -e files/MacOSX10.14.sdk.tar.xz ] || [ ! -e files/iPhoneOS12.4.sdk.tar.xz ] || [ ! -e files/iPhoneSimulator12.4.sdk.tar.xz ]; then
+  if [ ! -e files/Xcode_10.3.xip ]; then
+    echo "files/Xcode_10.3.xip is required. It can be downloaded from https://developer.apple.com/download/more/ with a valid apple ID"
     exit 1
   fi
 
