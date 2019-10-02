@@ -12,7 +12,7 @@ RUN dnf -y install autoconf automake libtool clang cmake fuse fuse-devel git pat
 
 CMD mkdir -p /root/xcode && \
     cd /root/xcode && \
-    xar -xf /root/files/Xcode_9.2.xip && \
+    xar -xf /root/files/Xcode_10.3.xip && \
     /root/pbzx/pbzx -n Content | cpio -i && \
     cp -r Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk /tmp/MacOSX10.14.sdk && \
     cp -r Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 /tmp/MacOSX10.14.sdk/usr/include/c++ && \
