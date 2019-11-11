@@ -1,13 +1,30 @@
-FROM godot-fedora:latest
+ARG mono_version
+FROM godot-mono:${mono_version}
+ARG mono_version
 
 RUN dnf -y install scons java-1.8.0-openjdk-devel ncurses-compat-libs unzip which gcc gcc-c++ && \
+    mkdir sdk && cd sdk && \
     curl -LO https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip && \
     unzip sdk-tools-linux-4333796.zip && \
     rm sdk-tools-linux-4333796.zip && \
     yes | tools/bin/sdkmanager --licenses && \
-    tools/bin/sdkmanager ndk-bundle 'platforms;android-23' 'build-tools;19.1.0' 'build-tools;28.0.3' 'platforms;android-28' 
+    tools/bin/sdkmanager ndk-bundle 'build-tools;28.0.3' 'platforms;android-28' 'cmake;3.10.2.4988404' && \
+    cd ..
 
-ENV ANDROID_HOME=/root/
-ENV ANDROID_NDK_ROOT=/root/ndk-bundle/
+ENV ANDROID_HOME=/root/sdk/
+ENV ANDROID_NDK_ROOT=/root/sdk/ndk-bundle/
+
+RUN dnf -y install git patch && \
+    git clone https://github.com/mono/mono --branch mono-${mono_version} --single-branch && \
+    cd mono && git submodule update --init && \
+    patch -p1 < /root/files/patches/fix-mono-android-tkill.diff && \
+    cd .. && \
+    git clone https://github.com/godotengine/godot-mono-builds && \
+    cd godot-mono-builds && \
+    git checkout 9efec19e6b61fdc7201067cff4dd5b741399ae31 && \
+    ./build_mono_android.py configure --target=all --mono-sources=/root/mono && \
+    ./build_mono_android.py make --target=all --mono-sources=/root/mono && \
+    cd .. && \
+    rm -rf /root/mono /root/godot-mono-builds
 
 CMD ['/bin/bash']
