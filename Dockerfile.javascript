@@ -1,10 +1,10 @@
 FROM godot-fedora:latest
 
-RUN dnf -y install scons git bzip2 xz java-openjdk yasm && dnf clean all && \
+RUN dnf -y install which scons git bzip2 xz java-openjdk yasm && dnf clean all && \
     git clone https://github.com/emscripten-core/emsdk && \
     cd emsdk && \
-    ./emsdk install latest && \
-    ./emsdk activate latest && \
+    ./emsdk install 1.39.0 && \
+    ./emsdk activate 1.39.0 && \
     echo "source /root/emsdk/emsdk_env.sh" >> /root/.bashrc
 
 CMD ['/bin/bash']
