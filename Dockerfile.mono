@@ -13,7 +13,7 @@ RUN dnf -y install autoconf automake libtool cmake gcc gcc-c++ make which perl p
     cd mono-${mono_version} && \
     autoreconf -vfi && \
     ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var/lib/mono --disable-boehm && \
-    make -j && make install && make distclean && \
+    make -j && make install && \
     cd /root && \
     rm -rf mono-${mono_version} && \
     cert-sync /etc/pki/tls/certs/ca-bundle.crt
