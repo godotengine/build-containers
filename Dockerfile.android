@@ -17,14 +17,17 @@ ENV ANDROID_HOME=/root/sdk/
 ENV ANDROID_NDK_ROOT=/root/sdk/ndk-bundle/
 
 RUN git clone https://github.com/mono/mono --branch mono-${mono_version} --single-branch && \
-    cd mono && git submodule update --init && \
-    patch -p1 < /root/files/patches/fix-mono-android-tkill.diff && \
-    cd .. && \
+    cd mono && git submodule update --init && cd .. && \
+    export MONO_SOURCE_ROOT=/root/mono && \
     git clone https://github.com/godotengine/godot-mono-builds && \
     cd godot-mono-builds && \
-    git checkout 9efec19e6b61fdc7201067cff4dd5b741399ae31 && \
-    ./build_mono_android.py configure --target=all --mono-sources=/root/mono && \
-    ./build_mono_android.py make --target=all --mono-sources=/root/mono && \
+    git checkout bd129da22b8b9c96f3e8b07af348cc5fb61504bf && \
+    python3 patch_mono.py && \
+    python3 android.py configure --target=all-runtime && \
+    python3 android.py make --target=all-runtime && \
+    cd /root/mono && git clean -fdx && NOCONFIGURE=1 ./autogen.sh && \
+    cd /root/godot-mono-builds && \
+    python3 bcl.py make --product=android && \
     cd .. && \
     rm -rf /root/mono /root/godot-mono-builds
 
