@@ -25,4 +25,4 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     rm -rf /root/.wine/drive_c/users/root/Temp/* && \
     rm -rf /root/.cache
     
-CMD /usr/bin/bash
+CMD /bin/bash

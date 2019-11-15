@@ -26,4 +26,4 @@ RUN git clone https://github.com/mono/mono --branch mono-${mono_version} --singl
     cd .. && \
     rm -rf /root/mono /root/godot-mono-builds
 
-CMD ['/bin/bash']
+CMD /bin/bash

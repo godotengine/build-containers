@@ -19,3 +19,5 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
                       https://download.mono-project.com/repo/centos8-stable/m/msbuild/msbuild-sdkresolver-16.0+xamarinxplat.2018.09.26.17.53-0.xamarin.5.epel8.noarch.rpm \
                       https://download.mono-project.com/repo/centos8-stable/n/nuget/nuget-4.7.0.5148.bin-0.xamarin.2.epel8.noarch.rpm && \
     rm -rf /root/mono
+
+CMD /bin/bash
