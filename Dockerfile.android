@@ -2,7 +2,9 @@ ARG mono_version
 FROM godot-mono:${mono_version}
 ARG mono_version
 
-RUN dnf -y install java-1.8.0-openjdk-devel ncurses-compat-libs gcc gcc-c++ && \
+RUN dnf -y install --setopt=install_weak_deps=False \
+      gcc gcc-c++ java-1.8.0-openjdk-devel ncurses-compat-libs && \
+    dnf clean all && \
     mkdir sdk && cd sdk && \
     curl -LO https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip && \
     unzip sdk-tools-linux-4333796.zip && \
