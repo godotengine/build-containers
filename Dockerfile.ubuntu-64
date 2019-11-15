@@ -14,7 +14,7 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y bzip2 cmake curl git make perl scons xz-utils && \
     apt-get install -y gcc-8 g++-8 libudev-dev libx11-dev libxcursor-dev libxrandr-dev libasound2-dev libpulse-dev \
-            libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev libxi-dev libxinerama-dev yasm && \
+            libgl1-mesa-dev libglu1-mesa-dev libxi-dev libxinerama-dev yasm && \
     ln -sf /usr/bin/gcc-ranlib-8 /usr/bin/gcc-ranlib && \
     ln -sf /usr/bin/gcc-ar-8 /usr/bin/gcc-ar && \
     ln -sf /usr/bin/gcc-8 /usr/bin/gcc && \
