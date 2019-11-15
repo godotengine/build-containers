@@ -1,6 +1,6 @@
 FROM godot-fedora:latest
 
-RUN dnf -y install autoconf automake libtool clang cmake fuse fuse-devel git patch make libxml2-devel libicu-devel compat-openssl10-devel bzip2-devel kmod xz cpio && \
+RUN dnf -y install autoconf automake libtool clang cmake fuse fuse-devel libxml2-devel libicu-devel compat-openssl10-devel bzip2-devel kmod cpio && \
     git clone https://github.com/mackyle/xar.git && \
     cd xar/xar && \
     ./autogen.sh --prefix=/usr && \

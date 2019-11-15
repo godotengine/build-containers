@@ -4,7 +4,7 @@ ARG mono_version
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi
 
-RUN dnf -y install autoconf automake libtool cmake gcc gcc-c++ make which perl python curl bzip2 xz && dnf clean all && \
+RUN dnf -y install autoconf automake libtool cmake gcc gcc-c++ perl python && dnf clean all && \
     if [ ${mono_version%%.*} -ge 6 ]; then \
         curl https://download.mono-project.com/sources/mono/mono-${mono_version}.tar.xz | tar xJ; \
     else \

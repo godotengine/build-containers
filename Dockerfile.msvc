@@ -1,7 +1,7 @@
 FROM godot-fedora:latest
 
 ENV WINEDEBUG=-all
-RUN dnf -y install wine winetricks xorg-x11-server-Xvfb curl p7zip-plugins findutils && dnf clean all && \
+RUN dnf -y install wine winetricks xorg-x11-server-Xvfb p7zip-plugins findutils && dnf clean all && \
     curl -LO https://github.com/GodotBuilder/godot-builds/releases/download/_tools/angle.7z && \
     curl -LO https://www.python.org/ftp/python/3.7.2/python-3.7.2-amd64.exe && \
     xvfb-run sh -c "winetricks -q vcrun2017; wineserver -w" ;\

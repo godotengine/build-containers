@@ -1,6 +1,6 @@
 FROM godot-fedora:latest
 
-RUN dnf -y install which scons git bzip2 xz java-openjdk yasm && dnf clean all && \
+RUN dnf -y install java-openjdk yasm && dnf clean all && \
     git clone https://github.com/emscripten-core/emsdk && \
     cd emsdk && \
     ./emsdk install 1.39.0 && \
