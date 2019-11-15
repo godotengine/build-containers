@@ -7,3 +7,5 @@
 *.dmg
 *.zip
 *.xip
+
+logs/
