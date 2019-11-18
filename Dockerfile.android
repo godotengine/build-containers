@@ -2,7 +2,8 @@ ARG mono_version
 FROM godot-mono:${mono_version}
 ARG mono_version
 
-RUN dnf -y install --setopt=install_weak_deps=False \
+RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
+    dnf -y install --setopt=install_weak_deps=False \
       gcc gcc-c++ java-1.8.0-openjdk-devel ncurses-compat-libs && \
     dnf clean all && \
     mkdir sdk && cd sdk && \
@@ -10,8 +11,7 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     unzip sdk-tools-linux-4333796.zip && \
     rm sdk-tools-linux-4333796.zip && \
     yes | tools/bin/sdkmanager --licenses && \
-    tools/bin/sdkmanager ndk-bundle 'build-tools;28.0.3' 'platforms;android-28' 'cmake;3.10.2.4988404' && \
-    cd ..
+    tools/bin/sdkmanager ndk-bundle 'build-tools;28.0.3' 'platforms;android-28' 'cmake;3.10.2.4988404'
 
 ENV ANDROID_HOME=/root/sdk/
 ENV ANDROID_NDK_ROOT=/root/sdk/ndk-bundle/

@@ -2,9 +2,8 @@ ARG mono_version
 FROM godot-mono:${mono_version}
 ARG mono_version
 
-RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi
-
-RUN dnf -y install --setopt=install_weak_deps=False \
+RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
+    dnf -y install --setopt=install_weak_deps=False \
       automake autoconf bzip2-devel clang libicu-devel libtool libxml2-devel llvm-devel openssl-devel yasm && \
     dnf clean all && \
     git clone https://github.com/tpoechtrager/osxcross.git && \
@@ -32,15 +31,11 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     cp -v /root/osxcross/build/compiler-rt/build/lib/darwin/*.a ${CLANG_LIB_DIR}/lib/darwin && \
     cp -v /root/osxcross/build/compiler-rt/build/lib/darwin/*.dylib ${CLANG_LIB_DIR}/lib/darwin
 
-RUN if [ ${mono_version%%.*} -ge 6 ]; then \
-        curl https://download.mono-project.com/sources/mono/mono-${mono_version}.tar.xz | tar xJ; \
-    else \
-        curl https://download.mono-project.com/sources/mono/mono-${mono_version}.tar.bz2 | tar xj; \
-    fi && \
-    cd mono-${mono_version} && \
+RUN git clone https://github.com/mono/mono --branch mono-${mono_version} --single-branch && \
+    cd mono && git submodule update --init && \
     patch -p1 < /root/files/patches/fix-mono-configure.diff && \
     export PATH=/root/osxcross/target/bin:$PATH && \
-    export CMAKE=/root//osxcross/target/bin/x86_64-apple-darwin17-cmake && \
+    export CMAKE=/root/osxcross/target/bin/x86_64-apple-darwin17-cmake && \
     ./autogen.sh --prefix=/root/dependencies/mono \
         --build=x86_64-linux-gnu \
         --host=x86_64-apple-darwin17 \
@@ -55,13 +50,14 @@ RUN if [ ${mono_version%%.*} -ge 6 ]; then \
         CXX=o64-clang++ && \
     make -j && \
     make install && \
+    cd .. && \
     rm -f /root/dependencies/mono/bin/mono /root/dependencies/mono/bin/mono-sgen && \
     ln -s /usr/bin/mono /root/dependencies/mono/bin/mono && \
     ln -s /usr/bin/mono-sgen /root/dependencies/mono/bin/mono-sgen && \
-    ln -sf /usr/lib/mono/* /root/dependencies/mono/lib/mono ;\
+    ln -sf /usr/lib/mono/* /root/dependencies/mono/lib/mono && \
     cp -rvp /etc/mono /root/dependencies/mono/etc && \
     cp /root/files/mono-config-macosx /root/dependencies/mono/etc/config && \
-    rm -rf /root/mono-${mono_version} /root/apple-libtapi /root/cctools-port
+    rm -rf /root/mono /root/apple-libtapi /root/cctools-port
 
 ENV MONO64_PREFIX=/root/dependencies/mono
 ENV OSXCROSS_ROOT=/root/osxcross
