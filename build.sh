@@ -30,9 +30,8 @@ $podman build --build-arg mono_version=${mono_version} -t godot-mono-glue:latest
 $podman build --build-arg mono_version=${mono_version} -v $(pwd)/files:/root/files -t godot-windows:latest -f Dockerfile.windows .
 $podman build --build-arg mono_version=${mono_version} -t godot-ubuntu-32:latest -f Dockerfile.ubuntu-32 .
 $podman build --build-arg mono_version=${mono_version} -t godot-ubuntu-64:latest -f Dockerfile.ubuntu-64 .
-$podman build --build-arg mono_version=${mono_version} -v $(pwd)/files:/root/files -t godot-android:latest -f Dockerfile.android .
-
-$podman build -t godot-javascript:latest -f Dockerfile.javascript .
+$podman build --build-arg mono_version=${mono_version} -t godot-android:latest -f Dockerfile.android .
+$podman build --build-arg mono_version=${mono_version} -t godot-javascript:latest -f Dockerfile.javascript .
 
 $podman build -t godot-xcode-packer:latest -f Dockerfile.xcode -v $(pwd)/files:/root/files .
 
