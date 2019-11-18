@@ -2,7 +2,9 @@ ARG mono_version
 FROM godot-mono:${mono_version}
 ARG mono_version
 
-RUN dnf -y install scons java-1.8.0-openjdk-devel ncurses-compat-libs unzip which gcc gcc-c++ && \
+RUN dnf -y install --setopt=install_weak_deps=False \
+      gcc gcc-c++ java-1.8.0-openjdk-devel ncurses-compat-libs && \
+    dnf clean all && \
     mkdir sdk && cd sdk && \
     curl -LO https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip && \
     unzip sdk-tools-linux-4333796.zip && \
@@ -14,8 +16,7 @@ RUN dnf -y install scons java-1.8.0-openjdk-devel ncurses-compat-libs unzip whic
 ENV ANDROID_HOME=/root/sdk/
 ENV ANDROID_NDK_ROOT=/root/sdk/ndk-bundle/
 
-RUN dnf -y install git patch && \
-    git clone https://github.com/mono/mono --branch mono-${mono_version} --single-branch && \
+RUN git clone https://github.com/mono/mono --branch mono-${mono_version} --single-branch && \
     cd mono && git submodule update --init && \
     patch -p1 < /root/files/patches/fix-mono-android-tkill.diff && \
     cd .. && \

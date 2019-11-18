@@ -4,7 +4,9 @@ ARG mono_version
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi
 
-RUN dnf -y install scons mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static mingw64-gcc mingw64-gcc-c++ mingw64-winpthreads-static yasm bzip2 xz && dnf clean all && \
+RUN dnf -y install --setopt=install_weak_deps=False \
+      mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static mingw64-gcc mingw64-gcc-c++ mingw64-winpthreads-static yasm && \
+    dnf clean all && \
     rpm -Uvh --force /root/files/mingw-binutils-generic-2.30-5.fc29.godot.x86_64.rpm \
                      /root/files/mingw64-binutils-2.30-5.fc29.godot.x86_64.rpm \
                      /root/files/mingw32-binutils-2.30-5.fc29.godot.x86_64.rpm && \
