@@ -6,7 +6,7 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     dnf -y install --setopt=install_weak_deps=False \
       autoconf automake cmake gcc gcc-c++ gettext libtool perl python && \
     dnf clean all && \
-    git clone https://github.com/mono/mono --branch mono-${mono_version} --single-branch && \
+    git clone https://github.com/mono/mono --branch ${mono_version} --single-branch && \
     cd mono && git submodule update --init && \
     NOCONFIGURE=1 ./autogen.sh && \
     ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var/lib/mono --disable-boehm && \
@@ -14,10 +14,11 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     make install && \
     cd .. && \
     cert-sync /etc/pki/tls/certs/ca-bundle.crt && \
-    rpm -ivh --nodeps https://download.mono-project.com/repo/centos8-stable/m/msbuild/msbuild-16.0+xamarinxplat.2018.09.26.17.53-0.xamarin.5.epel8.noarch.rpm \
-                      https://download.mono-project.com/repo/centos8-stable/m/msbuild-libhostfxr/msbuild-libhostfxr-2.0.0.2017.07.06.00.01-0.xamarin.3.epel8.x86_64.rpm \
-                      https://download.mono-project.com/repo/centos8-stable/m/msbuild/msbuild-sdkresolver-16.0+xamarinxplat.2018.09.26.17.53-0.xamarin.5.epel8.noarch.rpm \
-                      https://download.mono-project.com/repo/centos8-stable/n/nuget/nuget-4.7.0.5148.bin-0.xamarin.2.epel8.noarch.rpm && \
+    rpm -ivh --nodeps \
+      https://download.mono-project.com/repo/centos8-stable/m/msbuild/msbuild-16.3+xamarinxplat.2019.08.08.00.55-0.xamarin.2.epel8.noarch.rpm \
+      https://download.mono-project.com/repo/centos8-stable/m/msbuild-libhostfxr/msbuild-libhostfxr-3.0.0.2019.04.16.02.13-0.xamarin.4.epel8.x86_64.rpm \
+      https://download.mono-project.com/repo/centos8-stable/m/msbuild/msbuild-sdkresolver-16.3+xamarinxplat.2019.08.08.00.55-0.xamarin.2.epel8.noarch.rpm \
+      https://download.mono-project.com/repo/centos8-stable/n/nuget/nuget-5.2.0.6090.bin-0.xamarin.1.epel8.noarch.rpm && \
     rm -rf /root/mono
 
 CMD /bin/bash

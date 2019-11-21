@@ -16,9 +16,10 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
 ENV ANDROID_HOME=/root/sdk/
 ENV ANDROID_NDK_ROOT=/root/sdk/ndk-bundle/
 
-RUN git clone https://github.com/mono/mono --branch mono-${mono_version} --single-branch && \
+RUN git clone https://github.com/mono/mono --branch ${mono_version} --single-branch && \
     cd mono && git submodule update --init && cd .. && \
     export MONO_SOURCE_ROOT=/root/mono && \
+    export make="make -j" && \
     git clone https://github.com/godotengine/godot-mono-builds && \
     cd godot-mono-builds && \
     git checkout bd129da22b8b9c96f3e8b07af348cc5fb61504bf && \

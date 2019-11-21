@@ -20,7 +20,7 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     ln -sf /usr/bin/gcc-8 /usr/bin/gcc && \
     ln -sf /usr/bin/g++-8 /usr/bin/g++
 
-RUN git clone https://github.com/mono/mono --branch mono-${mono_version} --single-branch && \
+RUN git clone https://github.com/mono/mono --branch ${mono_version} --single-branch && \
     cd mono && git submodule update --init && \
     NOCONFIGURE=1 ./autogen.sh && \
     ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var/lib/mono --disable-boehm --host=x86_64-linux-gnu && \
@@ -28,16 +28,16 @@ RUN git clone https://github.com/mono/mono --branch mono-${mono_version} --singl
     make install && \
     cd .. && \
     cert-sync /etc/ssl/certs/ca-certificates.crt && \
-    wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild_16.0+xamarinxplat.2018.09.26.17.53-0xamarin3+ubuntu1404b1_all.deb && \
-    wget https://download.mono-project.com/repo/ubuntu/pool/main/c/core-setup/msbuild-libhostfxr_2.0.0.2017.07.06.00.01-0xamarin21+ubuntu1404b1_amd64.deb && \
-    wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild-sdkresolver_16.0+xamarinxplat.2018.09.26.17.53-0xamarin3+ubuntu1404b1_all.deb && \
-    wget https://download.mono-project.com/repo/ubuntu/pool/main/n/nuget/nuget_4.7.0.5148.bin-0xamarin2+ubuntu1404b1_all.deb && \
+    rm -rf /root/mono && \
+    wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild_16.3+xamarinxplat.2019.08.08.00.55-0xamarin2+ubuntu1604b1_all.deb && \
+    wget https://download.mono-project.com/repo/ubuntu/pool/main/c/core-setup/msbuild-libhostfxr_3.0.0.2019.04.16.02.13-0xamarin3+ubuntu1604b1_amd64.deb && \
+    wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild-sdkresolver_16.3+xamarinxplat.2019.08.08.00.55-0xamarin2+ubuntu1604b1_all.deb && \
+    wget https://download.mono-project.com/repo/ubuntu/pool/main/n/nuget/nuget_5.2.0.6090.bin-0xamarin1+ubuntu1604b1_all.deb && \
     dpkg -i --force-all *.deb && \
     sed -i '/Depends.*mono/d' /var/lib/dpkg/status && \
     ln -s /usr/bin/mono /usr/bin/cli && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/ && \
-    rm *.deb && \
-    rm -rf /root/mono
+    rm *.deb
 
 CMD /bin/bash
