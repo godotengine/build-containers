@@ -10,7 +10,7 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
                      /root/files/mingw64-binutils-2.30-5.fc29.godot.x86_64.rpm \
                      /root/files/mingw32-binutils-2.30-5.fc29.godot.x86_64.rpm
 
-RUN git clone https://github.com/mono/mono --branch mono-${mono_version} --single-branch && \
+RUN git clone https://github.com/mono/mono --branch ${mono_version} --single-branch && \
     cd mono && git submodule update --init && \
     NOCONFIGURE=1 ./autogen.sh && \
     ./configure --prefix=/root/dependencies/mono-64 --host=x86_64-w64-mingw32 --disable-boehm --disable-mcs-build --disable-executables && \
