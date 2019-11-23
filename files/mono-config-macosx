@@ -11,7 +11,9 @@
 	<dllmap dll="oci" target="libclntsh.dylib" os="!windows"/>
 	<dllmap dll="db2cli" target="libdb2_36.dylib" os="!windows"/>
 	<dllmap dll="MonoPosixHelper" target="$mono_libdir/libMonoPosixHelper.dylib" os="!windows" />
-	<dllmap dll="System.Native" target="$mono_libdir/libmono-system-native.dylib" os="!windows" />
+	<dllmap dll="System.Native" target="$mono_libdir/libmono-native.dylib" os="!windows" />
+	<dllmap dll="System.Net.Security.Native" target="$mono_libdir/libmono-native.dylib" os="!windows" />
+	<dllmap dll="System.Security.Cryptography.Native.Apple" target="$mono_libdir/libmono-native.dylib" os="osx" />
 	<dllmap dll="libmono-btls-shared" target="$mono_libdir/libmono-btls-shared.dylib" os="!windows" />
 	<dllmap dll="i:msvcrt" target="libc.dylib" os="!windows"/>
 	<dllmap dll="i:msvcrt.dll" target="libc.dylib" os="!windows"/>
