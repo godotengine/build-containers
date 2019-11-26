@@ -6,4 +6,4 @@ RUN dnf -y install scons git xz java-openjdk yasm && dnf clean all && \
     /root/emsdk/emsdk install latest && \
     /root/emsdk/emsdk activate latest 
 
-CMD ['/bin/bash']
+CMD ["/bin/bash"]

@@ -10,4 +10,4 @@ RUN dnf -y install scons java-1.8.0-openjdk-devel ncurses-compat-libs unzip whic
 ENV ANDROID_HOME=/root/
 ENV ANDROID_NDK_ROOT=/root/ndk-bundle/
 
-CMD ['/bin/bash']
+CMD ["/bin/bash"]

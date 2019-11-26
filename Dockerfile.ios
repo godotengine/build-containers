@@ -18,4 +18,4 @@ RUN dnf -y install automake autoconf clang gcc gcc-c++ gcc-objc gcc-objc++ cmake
 
 ENV OSXCROSS_IOS=not_nothing
 
-CMD ['/bin/bash']
+CMD ["/bin/bash"]

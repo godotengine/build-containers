@@ -39,4 +39,4 @@ RUN apt-get update && \
 ENV MONO32_PREFIX=/usr
 ENV MONO64_PREFIX=/usr
 
-CMD ['/bin/bash']
+CMD ["/bin/bash"]

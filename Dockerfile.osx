@@ -59,4 +59,4 @@ RUN dnf -y install automake autoconf bzip2-devel clang git libicu-devel libtool 
 ENV MONO64_PREFIX=/root/dependencies/mono
 ENV OSXCROSS_ROOT=/root/osxcross
 
-CMD ['/bin/bash']
+CMD ["/bin/bash"]

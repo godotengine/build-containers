@@ -37,4 +37,4 @@ RUN dnf -y install scons mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static 
 ENV MONO32_PREFIX=/root/dependencies/mono-32
 ENV MONO64_PREFIX=/root/dependencies/mono-64
 
-CMD ['/bin/bash']
+CMD ["/bin/bash"]
