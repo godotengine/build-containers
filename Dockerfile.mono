@@ -1,4 +1,5 @@
-FROM godot-fedora:latest
+ARG img_version
+FROM godot-fedora:${img_version}
 
 ARG mono_version
 

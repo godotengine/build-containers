@@ -1,4 +1,4 @@
-FROM godot-fedora:latest
+FROM godot-fedora:${img_version}
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       autoconf automake libtool clang cmake fuse fuse-devel libxml2-devel libicu-devel compat-openssl10-devel bzip2-devel kmod cpio && \

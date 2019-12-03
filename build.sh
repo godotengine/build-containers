@@ -26,18 +26,21 @@ img_version=$godot_branch-$mono_version
 
 mkdir -p logs
 
-$podman build -t godot-fedora:${godot_branch} -f Dockerfile.base . 2>&1 | tee logs/base.log
-$podman build -t godot-export:${godot_branch} -f Dockerfile.export . 2>&1 | tee logs/export.log
+export podman_build="$podman build --build-arg img_version=${img_version}"
+export podman_build_mono="$podman_build --build-arg mono_version=${mono_version}"
 
-$podman build --build-arg mono_version=${mono_version} -t godot-mono:${img_version} -f Dockerfile.mono . 2>&1 | tee logs/mono.log
-$podman build --build-arg mono_version=${mono_version} -t godot-mono-glue:${img_version} -f Dockerfile.mono-glue . 2>&1 | tee logs/mono-glue.log
-$podman build --build-arg mono_version=${mono_version} -v $(pwd)/files:/root/files -t godot-windows:${img_version} -f Dockerfile.windows . 2>&1 | tee logs/windows.log
-$podman build --build-arg mono_version=${mono_version} -t godot-ubuntu-64:${img_version} -f Dockerfile.ubuntu-64 . 2>&1 | tee logs/ubuntu-64.log
-$podman build --build-arg mono_version=${mono_version} -t godot-ubuntu-32:${img_version} -f Dockerfile.ubuntu-32 . 2>&1 | tee logs/ubuntu-32.log
-$podman build --build-arg mono_version=${mono_version} -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
-$podman build --build-arg mono_version=${mono_version} -v $(pwd)/files:/root/files -t godot-javascript:${img_version}-upstream -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
+$podman_build -t godot-fedora:${img_version} -f Dockerfile.base . 2>&1 | tee logs/base.log
+$podman_build -t godot-export:${img_version} -f Dockerfile.export . 2>&1 | tee logs/export.log
 
-$podman build -t godot-xcode-packer:${godot_branch} -f Dockerfile.xcode -v $(pwd)/files:/root/files . 2>&1 | tee logs/xcode.log
+$podman_build_mono -t godot-mono:${img_version} -f Dockerfile.mono . 2>&1 | tee logs/mono.log
+$podman_build_mono -t godot-mono-glue:${img_version} -f Dockerfile.mono-glue . 2>&1 | tee logs/mono-glue.log
+$podman_build_mono -v $(pwd)/files:/root/files -t godot-windows:${img_version} -f Dockerfile.windows . 2>&1 | tee logs/windows.log
+$podman_build_mono -t godot-ubuntu-64:${img_version} -f Dockerfile.ubuntu-64 . 2>&1 | tee logs/ubuntu-64.log
+$podman_build_mono -t godot-ubuntu-32:${img_version} -f Dockerfile.ubuntu-32 . 2>&1 | tee logs/ubuntu-32.log
+$podman_build_mono -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
+$podman_build_mono -v $(pwd)/files:/root/files -t godot-javascript:${img_version}-upstream -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
+
+$podman_build -t godot-xcode-packer:${img_version} -f Dockerfile.xcode -v $(pwd)/files:/root/files . 2>&1 | tee logs/xcode.log
 
 if [ ! -e files/MacOSX10.14.sdk.tar.xz ] || [ ! -e files/iPhoneOS12.4.sdk.tar.xz ] || [ ! -e files/iPhoneSimulator12.4.sdk.tar.xz ]; then
   if [ ! -e files/Xcode_10.3.xip ]; then
@@ -46,11 +49,11 @@ if [ ! -e files/MacOSX10.14.sdk.tar.xz ] || [ ! -e files/iPhoneOS12.4.sdk.tar.xz
   fi
 
   echo "Building OSX and iOS SDK packages. This will take a while"
-  $podman run -it --rm -v $(pwd)/files:/root/files godot-xcode-packer:${godot_branch} 2>&1 | tee logs/xcode_packer.log
+  $podman run -it --rm -v $(pwd)/files:/root/files godot-xcode-packer:${img_version} 2>&1 | tee logs/xcode_packer.log
 fi
 
-$podman build -t godot-ios:${img_version} -f Dockerfile.ios -v $(pwd)/files:/root/files . 2>&1 | tee logs/ios.log
-$podman build --build-arg mono_version=${mono_version} -t godot-osx:${img_version} -f Dockerfile.osx -v $(pwd)/files:/root/files . 2>&1 | tee logs/osx.log
+$podman_build -t godot-ios:${img_version} -f Dockerfile.ios -v $(pwd)/files:/root/files . 2>&1 | tee logs/ios.log
+$podman_build_mono -t godot-osx:${img_version} -f Dockerfile.osx -v $(pwd)/files:/root/files . 2>&1 | tee logs/osx.log
 
 if [ ! -e files/msvc2017.tar ]; then
   echo
@@ -64,4 +67,4 @@ if [ ! -e files/msvc2017.tar ]; then
   exit 1
 fi
 
-$podman build -t godot-msvc:${img_version} -f Dockerfile.msvc -v $(pwd)/files:/root/files . 2>&1 | tee logs/msvc.log
+$podman_build -t godot-msvc:${img_version} -f Dockerfile.msvc -v $(pwd)/files:/root/files . 2>&1 | tee logs/msvc.log
