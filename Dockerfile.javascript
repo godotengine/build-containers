@@ -2,6 +2,7 @@ ARG img_version
 FROM godot-mono:${img_version}
 
 ARG mono_version
+ARG mono_commit
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       java-openjdk yasm && \
@@ -14,13 +15,14 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     echo "source /root/emsdk/emsdk_env.sh" >> /root/.bashrc
 
 RUN git clone https://github.com/mono/mono --branch ${mono_version} --single-branch && \
-    cd mono && git submodule update --init && \
+    cd /root/mono && \
+    if [ ! -z "${mono_commit}" ]; then git checkout ${mono_commit}; fi && \
+    git submodule update --init && \
     git apply -3 /root/files/patches/mono-pr16636-wasm-bugfix-and-update.diff && \
-    cd .. && \
     export MONO_SOURCE_ROOT=/root/mono && \
     export make="make -j" && \
-    git clone https://github.com/godotengine/godot-mono-builds && \
-    cd godot-mono-builds && \
+    git clone https://github.com/godotengine/godot-mono-builds /root/godot-mono-builds && \
+    cd /root/godot-mono-builds && \
     git checkout bd129da22b8b9c96f3e8b07af348cc5fb61504bf && \
     python3 patch_emscripten.py && \
     python3 wasm.py configure --target=runtime && \
@@ -28,7 +30,7 @@ RUN git clone https://github.com/mono/mono --branch ${mono_version} --single-bra
     cd /root/mono && git clean -fdx && NOCONFIGURE=1 ./autogen.sh && \
     cd /root/godot-mono-builds && \
     python3 bcl.py make --product wasm && \
-    cd .. && \
+    cd /root && \
     rm -rf /root/mono /root/godot-mono-builds
 
 CMD /bin/bash
