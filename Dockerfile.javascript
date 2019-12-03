@@ -7,6 +7,7 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     dnf clean all && \
     git clone https://github.com/emscripten-core/emsdk && \
     cd emsdk && \
+    git checkout a5082b232617c762cb65832429f896c838df2483 && \
     ./emsdk install 1.38.47-upstream && \
     ./emsdk activate 1.38.47-upstream && \
     echo "source /root/emsdk/emsdk_env.sh" >> /root/.bashrc
