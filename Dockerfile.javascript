@@ -8,19 +8,21 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     dnf clean all && \
     git clone https://github.com/emscripten-core/emsdk && \
     cd emsdk && \
+    git checkout a5082b232617c762cb65832429f896c838df2483 && \
     ./emsdk install 1.38.47-upstream && \
     ./emsdk activate 1.38.47-upstream && \
     echo "source /root/emsdk/emsdk_env.sh" >> /root/.bashrc
 
 RUN git clone https://github.com/mono/mono --branch ${mono_version} --single-branch && \
-    cd mono && git submodule update --init && cd .. && \
+    cd mono && git submodule update --init && \
+    git apply -3 /root/files/patches/mono-pr16636-wasm-bugfix-and-update.diff && \
+    cd .. && \
     export MONO_SOURCE_ROOT=/root/mono && \
     export make="make -j" && \
     git clone https://github.com/godotengine/godot-mono-builds && \
     cd godot-mono-builds && \
     git checkout bd129da22b8b9c96f3e8b07af348cc5fb61504bf && \
     python3 patch_emscripten.py && \
-    git am -3 /root/files/patches/mono-wasm-avoid-aligning-stack-bounds.patch && \
     python3 wasm.py configure --target=runtime && \
     python3 wasm.py make --target=runtime && \
     cd /root/mono && git clean -fdx && NOCONFIGURE=1 ./autogen.sh && \
