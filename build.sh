@@ -13,9 +13,10 @@ if ! which $podman; then
 fi
 
 if [ -z "$1" ]; then
-  echo "usage: $0 <godot branch> <mono git version>"
+  echo "usage: $0 <godot branch> <mono version string> [<mono branch> <mono commit hash>]"
   echo
-  echo "For example: $0 3.1 mono-5.18.1.3"
+  echo "Examples: $0 3.1 mono-5.18.1.3"
+  echo "          $0 master mono-6.6.0.160 2019-08 bef1e6335812d32f8eab648c0228fc624b9f8357"
   echo
   exit 1
 fi
@@ -23,13 +24,31 @@ fi
 godot_branch=$1
 mono_version=$2
 img_version=$godot_branch-$mono_version
+mono_commit=
+if [ ! -z "$3" -a ! -z "$4" ]; then
+  # Optional Mono git branch and commit hash were passed,
+  # use that for the git clones.
+  mono_version=$3
+  mono_commit=$4
+fi
+echo "Building images with version: ${img_version}"
+echo "Mono version used: ${mono_version} ${mono_commit}"
+echo
+while true; do
+    read -p "Is this correct? [y/n] " yn
+    case $yn in
+        [Yy]* ) break;;
+        [Nn]* ) exit 1;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
 
 mkdir -p logs
 
 export podman_build="$podman build --build-arg img_version=${img_version}"
-export podman_build_mono="$podman_build --build-arg mono_version=${mono_version}"
+export podman_build_mono="$podman_build --build-arg mono_version=${mono_version} --build-arg mono_commit=${mono_commit}"
 
-$podman_build -t godot-fedora:${img_version} -f Dockerfile.base . 2>&1 | tee logs/base.log
+$podman build -t godot-fedora:${img_version} -f Dockerfile.base . 2>&1 | tee logs/base.log
 $podman_build -t godot-export:${img_version} -f Dockerfile.export . 2>&1 | tee logs/export.log
 
 $podman_build_mono -t godot-mono:${img_version} -f Dockerfile.mono . 2>&1 | tee logs/mono.log
@@ -38,7 +57,7 @@ $podman_build_mono -v $(pwd)/files:/root/files -t godot-windows:${img_version} -
 $podman_build_mono -t godot-ubuntu-64:${img_version} -f Dockerfile.ubuntu-64 . 2>&1 | tee logs/ubuntu-64.log
 $podman_build_mono -t godot-ubuntu-32:${img_version} -f Dockerfile.ubuntu-32 . 2>&1 | tee logs/ubuntu-32.log
 $podman_build_mono -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
-$podman_build_mono -v $(pwd)/files:/root/files -t godot-javascript:${img_version}-upstream -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
+$podman_build_mono -v $(pwd)/files:/root/files -t godot-javascript:${img_version} -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
 
 $podman_build -t godot-xcode-packer:${img_version} -f Dockerfile.xcode -v $(pwd)/files:/root/files . 2>&1 | tee logs/xcode.log
 
