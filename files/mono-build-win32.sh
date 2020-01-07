@@ -1,6 +1,12 @@
 #!/bin/bash
 
-echo -e '#!/bin/bash\nwine${WINE_BITS} $(dirname $0)/mono-sgen.exe "$@"' > mono/mini/mono
+if [ "${WINE_BITS}" == "64" ]; then
+  export WINEPATH="/usr/x86_64-w64-mingw32/sys-root/mingw/bin/"
+else
+  export WINEPATH="/usr/i686-w64-mingw32/sys-root/mingw/bin/"
+fi
+
+echo -e '#!/bin/bash\n'"wine${WINE_BITS}"' $(dirname $0)/mono-sgen.exe "$@"' > mono/mini/mono
 chmod +x mono/mini/mono
 
 mkdir -p .bin
