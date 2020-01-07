@@ -23,7 +23,7 @@ RUN git clone https://github.com/mono/mono --branch ${mono_version} --single-bra
     export make="make -j" && \
     git clone https://github.com/godotengine/godot-mono-builds /root/godot-mono-builds && \
     cd /root/godot-mono-builds && \
-    git checkout bd129da22b8b9c96f3e8b07af348cc5fb61504bf && \
+    git checkout 710b275fbf29ddb03fd5285c51782951a110cdab && \
     python3 patch_emscripten.py && \
     python3 wasm.py configure --target=runtime && \
     python3 wasm.py make --target=runtime && \

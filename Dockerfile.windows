@@ -20,16 +20,16 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     rm -f /root/dependencies/mono-64/bin/mono /root/dependencies/mono-64/bin/mono-sgen && \
     ln -s /usr/bin/mono /root/dependencies/mono-64/bin/mono && \
     ln -s /usr/bin/mono-sgen /root/dependencies/mono-64/bin/mono-sgen && \
-    ln -sf /usr/lib/mono/* /root/dependencies/mono-64/lib/mono || /bin/true && \
+    (ln -sf /usr/lib/mono/* /root/dependencies/mono-64/lib/mono/ || /bin/true) && \
     cp -rvp /etc/mono /root/dependencies/mono-64/etc && \
     export WINE_BITS=32 && \
-    bash /root/files/mono-build-win32.sh --prefix=/root/dependencies/mono-32 --host=i686-w64-mingw32 && \
+    (bash /root/files/mono-build-win32.sh --prefix=/root/dependencies/mono-32 --host=i686-w64-mingw32 || /bin/true) && \
     cd /root && \
     cp /root/dependencies/mono-32/bin/libMonoPosixHelper.dll /root/dependencies/mono-32/bin/MonoPosixHelper.dll && \
     rm -f /root/dependencies/mono-32/bin/mono /root/dependencies/mono-32/bin/mono-sgen && \
     ln -s /usr/bin/mono /root/dependencies/mono-32/bin/mono && \
     ln -s /usr/bin/mono-sgen /root/dependencies/mono-32/bin/mono-sgen && \
-    ln -sf /usr/lib/mono/* /root/dependencies/mono-32/lib/mono || /bin/true && \
+    (ln -sf /usr/lib/mono/* /root/dependencies/mono-32/lib/mono/ || /bin/true) && \
     cp -rvp /etc/mono /root/dependencies/mono-32/etc && \
     rm -rf /root/mono && \
     dnf -y remove wine
