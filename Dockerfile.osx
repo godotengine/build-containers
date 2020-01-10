@@ -44,7 +44,6 @@ RUN git clone https://github.com/mono/mono --branch ${mono_version} --single-bra
     ln -sf /usr/lib/mono/* /root/dependencies/mono/lib/mono && \
     mkdir -p /root/dependencies/mono/etc && \
     cp -rvp /etc/mono /root/dependencies/mono/etc/ && \
-    cp /root/dependencies/mono/etc/mono/config{,.bak} && \
     cp /root/files/mono-config-macosx /root/dependencies/mono/etc/mono/config && \
     rm -rf /root/mono
 
