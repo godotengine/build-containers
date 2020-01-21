@@ -12,6 +12,7 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     cd /root/mono && \
     if [ ! -z "${mono_commit}" ]; then git checkout ${mono_commit}; fi && \
     git submodule update --init && \
+    git apply -3 /root/files/patches/mono-unity-Clear-TLS-instead-of-aborting.patch && \
     git apply -3 /root/files/patches/wine-mono.patch && \
     export WINE_BITS=64 && \
     bash /root/files/mono-build-win32.sh --prefix=/root/dependencies/mono-64 --host=x86_64-w64-mingw32 && \

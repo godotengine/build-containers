@@ -46,18 +46,18 @@ done
 mkdir -p logs
 
 export podman_build="$podman build --build-arg img_version=${img_version}"
-export podman_build_mono="$podman_build --build-arg mono_version=${mono_version} --build-arg mono_commit=${mono_commit}"
+export podman_build_mono="$podman_build --build-arg mono_version=${mono_version} --build-arg mono_commit=${mono_commit} -v $(pwd)/files:/root/files"
 
 $podman build -t godot-fedora:${img_version} -f Dockerfile.base . 2>&1 | tee logs/base.log
 $podman_build -t godot-export:${img_version} -f Dockerfile.export . 2>&1 | tee logs/export.log
 
 $podman_build_mono -t godot-mono:${img_version} -f Dockerfile.mono . 2>&1 | tee logs/mono.log
 $podman_build_mono -t godot-mono-glue:${img_version} -f Dockerfile.mono-glue . 2>&1 | tee logs/mono-glue.log
-$podman_build_mono -v $(pwd)/files:/root/files --ulimit nofile=65536 -t godot-windows:${img_version} -f Dockerfile.windows . 2>&1 | tee logs/windows.log
+$podman_build_mono -t godot-windows:${img_version} -f Dockerfile.windows --ulimit nofile=65536 . 2>&1 | tee logs/windows.log
 $podman_build_mono -t godot-ubuntu-64:${img_version} -f Dockerfile.ubuntu-64 . 2>&1 | tee logs/ubuntu-64.log
 $podman_build_mono -t godot-ubuntu-32:${img_version} -f Dockerfile.ubuntu-32 . 2>&1 | tee logs/ubuntu-32.log
 $podman_build_mono -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
-$podman_build_mono -v $(pwd)/files:/root/files -t godot-javascript:${img_version} -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
+$podman_build_mono -t godot-javascript:${img_version} -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
 
 $podman_build -t godot-xcode-packer:${img_version} -f Dockerfile.xcode -v $(pwd)/files:/root/files . 2>&1 | tee logs/xcode.log
 
@@ -72,7 +72,7 @@ if [ ! -e files/MacOSX10.14.sdk.tar.xz ] || [ ! -e files/iPhoneOS12.4.sdk.tar.xz
 fi
 
 $podman_build -t godot-ios:${img_version} -f Dockerfile.ios -v $(pwd)/files:/root/files . 2>&1 | tee logs/ios.log
-$podman_build_mono -t godot-osx:${img_version} -f Dockerfile.osx -v $(pwd)/files:/root/files . 2>&1 | tee logs/osx.log
+$podman_build_mono -t godot-osx:${img_version} -f Dockerfile.osx . 2>&1 | tee logs/osx.log
 
 if [ ! -e files/msvc2017.tar ]; then
   echo

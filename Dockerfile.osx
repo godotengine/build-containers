@@ -21,6 +21,7 @@ RUN git clone https://github.com/mono/mono --branch ${mono_version} --single-bra
     cd /root/mono && \
     if [ ! -z "${mono_commit}" ]; then git checkout ${mono_commit}; fi && \
     git submodule update --init && \
+    git apply -3 /root/files/patches/mono-unity-Clear-TLS-instead-of-aborting.patch && \
     export CMAKE=/root/osxcross/target/bin/x86_64-apple-darwin18-cmake && \
     NOCONFIGURE=1 ./autogen.sh && \
     ./configure --prefix=/root/dependencies/mono \

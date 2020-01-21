@@ -18,6 +18,7 @@ RUN git clone https://github.com/mono/mono --branch ${mono_version} --single-bra
     cd /root/mono && \
     if [ ! -z "${mono_commit}" ]; then git checkout ${mono_commit}; fi && \
     git submodule update --init && \
+    git apply -3 /root/files/patches/mono-unity-Clear-TLS-instead-of-aborting.patch && \
     git apply -3 /root/files/patches/mono-pr16636-wasm-bugfix-and-update.diff && \
     export MONO_SOURCE_ROOT=/root/mono && \
     export make="make -j" && \
