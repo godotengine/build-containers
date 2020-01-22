@@ -12,6 +12,7 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     cd /root/mono && \
     if [ ! -z "${mono_commit}" ]; then git checkout ${mono_commit}; fi && \
     git submodule update --init && \
+    git apply -3 /root/files/patches/mono-unity-Clear-TLS-instead-of-aborting.patch && \
     NOCONFIGURE=1 ./autogen.sh && \
     ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var/lib/mono --disable-boehm && \
     make -j && \
