@@ -17,7 +17,7 @@ export PATH="$(pwd)/.bin/:$PATH"
 ./autogen.sh $@ --disable-boehm --with-mcs-docs=no HOST_PROFILE=win32
 echo '#define HAVE_STRUCT_SOCKADDR_IN6 1' >> config.h
 pushd mcs/jay
-make CC=gcc
+make CC=gcc BUILD_PLATFORM=win32
 popd
 
 for dir in external/roslyn-binaries/Microsoft.Net.Compilers/[0-9]*; do
@@ -25,5 +25,5 @@ for dir in external/roslyn-binaries/Microsoft.Net.Compilers/[0-9]*; do
 done
 export MONO_PATH
 
-make -j
-make install
+make -j SHELL='bash -x'
+make install SHELL='bash -x'

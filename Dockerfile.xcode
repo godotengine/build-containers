@@ -2,14 +2,14 @@ FROM godot-fedora:${img_version}
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       autoconf automake libtool clang cmake fuse fuse-devel libxml2-devel libicu-devel compat-openssl10-devel bzip2-devel kmod cpio && \
-    dnf clean all && \
-    git clone https://github.com/mackyle/xar.git && \
+    dnf clean packages && \
+    git clone https://github.com/mackyle/xar.git --progress && \
     cd xar/xar && \
     git checkout 66d451dab1ef859dd0c83995f2379335d35e53c9 && \
     ./autogen.sh --prefix=/usr && \
     make -j && make install && \
     cd /root && \
-    git clone https://github.com/NiklasRosenstein/pbzx && \
+    git clone https://github.com/NiklasRosenstein/pbzx --progress && \
     cd pbzx && \
     git checkout 2a4d7c3300c826d918def713a24d25c237c8ed53 && \
     clang -O3 -llzma -lxar -I /usr/local/include pbzx.c -o pbzx

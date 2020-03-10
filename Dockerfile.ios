@@ -3,8 +3,8 @@ FROM godot-fedora:${img_version}
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       automake autoconf clang gcc gcc-c++ gcc-objc gcc-objc++ cmake libicu-devel libtool libxml2-devel llvm-devel openssl-devel perl python yasm && \
-    dnf clean all && \
-    git clone https://github.com/tpoechtrager/cctools-port.git && \
+    dnf clean packages && \
+    git clone https://github.com/tpoechtrager/cctools-port.git --progress && \
     cd /root/cctools-port && \
     git checkout 8239a5211bcf07d6b9d359782e1a889ec1d7cce5 && \
     sed -i 's#./autogen.sh#libtoolize -c -i --force\n./autogen.sh#' usage_examples/ios_toolchain/build.sh && \

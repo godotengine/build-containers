@@ -2,35 +2,37 @@ ARG img_version
 FROM godot-mono:${img_version}
 
 ARG mono_version
-ARG mono_commit
 
-RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
+RUN if [ -z "${mono_version}" ]; then echo -e "\n\nArgument mono_version is mandatory!\n\n"; exit 1; fi && \
     dnf -y install --setopt=install_weak_deps=False \
       mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static mingw64-gcc mingw64-gcc-c++ mingw64-winpthreads-static yasm wine && \
-    dnf clean all && \
-    git clone https://github.com/mono/mono --branch ${mono_version} --single-branch && \
-    cd /root/mono && \
-    if [ ! -z "${mono_commit}" ]; then git checkout ${mono_commit}; fi && \
-    git submodule update --init && \
-    git apply -3 /root/files/patches/mono-unity-Clear-TLS-instead-of-aborting.patch && \
-    git apply -3 /root/files/patches/wine-mono.patch && \
+    dnf clean packages && \
+    cp -a /root/files/${mono_version} /root && \
+    cd /root/${mono_version} && \
+    patch -p1 < /root/files/patches/wine-mono.patch && \
     export WINE_BITS=64 && \
-    bash /root/files/mono-build-win32.sh --prefix=/root/dependencies/mono-64 --host=x86_64-w64-mingw32 && \
-    git clean -fdx && \
+    bash -x /root/files/mono-build-win32.sh --prefix=/root/dependencies/mono-64 --host=x86_64-w64-mingw32 && \
+    cd /root && \
+    rm -rf /root/${mono_version} && \
     cp /root/dependencies/mono-64/bin/libMonoPosixHelper.dll /root/dependencies/mono-64/bin/MonoPosixHelper.dll && \
     rm -f /root/dependencies/mono-64/bin/mono /root/dependencies/mono-64/bin/mono-sgen && \
     ln -s /usr/bin/mono /root/dependencies/mono-64/bin/mono && \
     ln -s /usr/bin/mono-sgen /root/dependencies/mono-64/bin/mono-sgen && \
     cp -rvp /etc/mono /root/dependencies/mono-64/etc && \
+    \
+    cp -a /root/files/${mono_version} /root && \
+    cd /root/${mono_version} && \
+    patch -p1 < /root/files/patches/wine-mono.patch && \
     export WINE_BITS=32 && \
-    bash /root/files/mono-build-win32.sh --prefix=/root/dependencies/mono-32 --host=i686-w64-mingw32 && \
+    bash -x /root/files/mono-build-win32.sh --prefix=/root/dependencies/mono-32 --host=i686-w64-mingw32 && \
     cd /root && \
+    rm -rf /root/${mono_version} && \
     cp /root/dependencies/mono-32/bin/libMonoPosixHelper.dll /root/dependencies/mono-32/bin/MonoPosixHelper.dll && \
     rm -f /root/dependencies/mono-32/bin/mono /root/dependencies/mono-32/bin/mono-sgen && \
     ln -s /usr/bin/mono /root/dependencies/mono-32/bin/mono && \
     ln -s /usr/bin/mono-sgen /root/dependencies/mono-32/bin/mono-sgen && \
     cp -rvp /etc/mono /root/dependencies/mono-32/etc && \
-    rm -rf /root/mono && \
+    rpm -ev --nodeps --noscripts --notriggers avahi && \
     dnf -y remove wine
 
 ENV MONO32_PREFIX=/root/dependencies/mono-32
