@@ -2,9 +2,11 @@ FROM i386/ubuntu:trusty
 
 ARG mono_version
 
-RUN if [ -z "${mono_version}" ]; then echo -e "\n\nArgument mono_version is mandatory!\n\n"; exit 1; fi && \
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN if [ -z "${mono_version}" ]; then printf "\n\nArgument mono_version is mandatory!\n\n"; exit 1; fi && \
     apt-get update && \
-    apt-get -y install wget && \
+    apt-get -y install wget --no-install-recommends && \
     cd /root && \
     wget -O- 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x1E9377A2BA9EF27F' | apt-key add - && \
     wget -O- 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x8E51A6D660CD88D67D65221D90BD7EACED8E640A' | apt-key add - && \
@@ -18,7 +20,9 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nArgument mono_version is mand
     ln -sf /usr/bin/gcc-ranlib-8 /usr/bin/gcc-ranlib && \
     ln -sf /usr/bin/gcc-ar-8 /usr/bin/gcc-ar && \
     ln -sf /usr/bin/gcc-8 /usr/bin/gcc && \
-    ln -sf /usr/bin/g++-8 /usr/bin/g++
+    ln -sf /usr/bin/g++-8 /usr/bin/g++ && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
@@ -33,11 +37,9 @@ RUN cp -a /root/files/${mono_version} /root && \
     wget https://download.mono-project.com/repo/ubuntu/pool/main/c/core-setup/msbuild-libhostfxr_3.0.0.2019.04.16.02.13-0xamarin3+ubuntu1604b1_i386.deb && \
     wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild-sdkresolver_16.3+xamarinxplat.2019.08.08.00.55-0xamarin2+ubuntu1604b1_all.deb && \
     wget https://download.mono-project.com/repo/ubuntu/pool/main/n/nuget/nuget_5.2.0.6090.bin-0xamarin1+ubuntu1604b1_all.deb && \
-    dpkg -i --force-all *.deb && \
+    dpkg -i --force-all ./*.deb && \
     sed -i '/Depends.*mono/d' /var/lib/dpkg/status && \
     ln -s /usr/bin/mono /usr/bin/cli && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/ && \
-    rm *.deb
+    rm ./*.deb
 
-CMD /bin/bash
+CMD ["/bin/bash"]

@@ -7,4 +7,4 @@ RUN dnf -y upgrade --setopt=install_weak_deps=False && \
       bash bzip2 curl git make patch pkgconfig python3 scons unzip which xz && \
     dnf clean packages
 
-CMD /bin/true
+CMD ["/bin/bash"]

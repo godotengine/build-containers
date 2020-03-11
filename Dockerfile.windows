@@ -3,7 +3,7 @@ FROM godot-mono:${img_version}
 
 ARG mono_version
 
-RUN if [ -z "${mono_version}" ]; then echo -e "\n\nArgument mono_version is mandatory!\n\n"; exit 1; fi && \
+RUN if [ -z "${mono_version}" ]; then printf "\n\nArgument mono_version is mandatory!\n\n"; exit 1; fi && \
     dnf -y install --setopt=install_weak_deps=False \
       mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static mingw64-gcc mingw64-gcc-c++ mingw64-winpthreads-static yasm wine && \
     dnf clean packages && \
@@ -38,4 +38,4 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nArgument mono_version is mand
 ENV MONO32_PREFIX=/root/dependencies/mono-32
 ENV MONO64_PREFIX=/root/dependencies/mono-64
 
-CMD /bin/bash
+CMD ["/bin/bash"]
