@@ -30,4 +30,4 @@ RUN cp -a /root/files/${mono_version} /root && \
     cd /root && \
     rm -rf /root/${mono_version} /root/godot-mono-builds
 
-CMD /bin/bash
+CMD ["/bin/bash"]

@@ -21,4 +21,4 @@ RUN dnf -y install --setopt=install_weak_deps=False \
 
 ENV OSXCROSS_IOS=not_nothing
 
-CMD /bin/bash
+CMD ["/bin/bash"]

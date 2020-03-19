@@ -3,7 +3,7 @@ FROM godot-mono:${img_version}
 
 ARG mono_version
 
-RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
+RUN if [ -z "${mono_version}" ]; then printf "\n\nArgument mono_version is mandatory!\n\n"; exit 1; fi && \
     dnf -y install --setopt=install_weak_deps=False \
       automake autoconf bzip2-devel clang libicu-devel libtool libxml2-devel llvm-devel openssl-devel yasm && \
     git clone --progress https://github.com/tpoechtrager/osxcross.git && \
@@ -43,4 +43,4 @@ RUN cp -a /root/files/${mono_version} /root && \
     cp /root/files/mono-config-macosx /root/dependencies/mono/etc/mono/config && \
     rm -rf /root/${mono_version}
 
-CMD /bin/bash
+CMD ["/bin/bash"]

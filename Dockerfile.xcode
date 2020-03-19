@@ -1,5 +1,7 @@
 FROM godot-fedora:${img_version}
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 RUN dnf -y install --setopt=install_weak_deps=False \
       autoconf automake libtool clang cmake fuse fuse-devel libxml2-devel libicu-devel compat-openssl10-devel bzip2-devel kmod cpio && \
     git clone --progress https://github.com/mackyle/xar.git && \
@@ -11,9 +13,8 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     git clone --progress https://github.com/NiklasRosenstein/pbzx && \
     cd pbzx && \
     git checkout 2a4d7c3300c826d918def713a24d25c237c8ed53 && \
-    clang -O3 -llzma -lxar -I /usr/local/include pbzx.c -o pbzx
-
-CMD mkdir -p /root/xcode && \
+    clang -O3 -llzma -lxar -I /usr/local/include pbzx.c -o pbzx && \
+    mkdir -p /root/xcode && \
     cd /root/xcode && \
     xar -xf /root/files/Xcode_10.3.xip && \
     /root/pbzx/pbzx -n Content | cpio -i && \
@@ -40,3 +41,5 @@ CMD mkdir -p /root/xcode && \
     cp -r Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 /tmp/iPhoneOS12.4.sdk/usr/include/c++/ && \
     cd /tmp && \
     tar -cJf /root/files/iPhoneSimulator12.4.sdk.tar.xz iPhoneOS12.4.sdk
+
+CMD ["/bin/bash"]

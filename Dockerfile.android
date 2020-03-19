@@ -3,7 +3,9 @@ FROM godot-mono:${img_version}
 
 ARG mono_version
 
-RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN if [ -z "${mono_version}" ]; then printf "\n\nArgument mono_version is mandatory!\n\n"; exit 1; fi && \
     dnf -y install --setopt=install_weak_deps=False \
       gcc gcc-c++ java-1.8.0-openjdk-devel ncurses-compat-libs && \
     mkdir sdk && cd sdk && \
@@ -31,4 +33,4 @@ RUN cp -a /root/files/${mono_version} /root && \
     cd /root && \
     rm -rf /root/${mono_version} /root/godot-mono-builds
 
-CMD /bin/bash
+CMD ["/bin/bash"]
