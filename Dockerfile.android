@@ -2,12 +2,10 @@ ARG img_version
 FROM godot-mono:${img_version}
 
 ARG mono_version
-ARG mono_commit
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
     dnf -y install --setopt=install_weak_deps=False \
       gcc gcc-c++ java-1.8.0-openjdk-devel ncurses-compat-libs && \
-    dnf clean all && \
     mkdir sdk && cd sdk && \
     curl -LO https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip && \
     unzip sdk-tools-linux-4333796.zip && \
@@ -18,23 +16,19 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
 ENV ANDROID_HOME=/root/sdk/
 ENV ANDROID_NDK_ROOT=/root/sdk/ndk-bundle/
 
-RUN git clone https://github.com/mono/mono --branch ${mono_version} --single-branch && \
-    cd /root/mono && \
-    if [ ! -z "${mono_commit}" ]; then git checkout ${mono_commit}; fi && \
-    git submodule update --init && \
-    git apply -3 /root/files/patches/mono-unity-Clear-TLS-instead-of-aborting.patch && \
-    export MONO_SOURCE_ROOT=/root/mono && \
+RUN cp -a /root/files/${mono_version} /root && \
+    export MONO_SOURCE_ROOT=/root/${mono_version} && \
     export make="make -j" && \
-    git clone https://github.com/godotengine/godot-mono-builds /root/godot-mono-builds && \
+    git clone --progress https://github.com/godotengine/godot-mono-builds /root/godot-mono-builds && \
     cd /root/godot-mono-builds && \
     git checkout 710b275fbf29ddb03fd5285c51782951a110cdab && \
     python3 patch_mono.py && \
     python3 android.py configure --target=all-runtime && \
     python3 android.py make --target=all-runtime && \
-    cd /root/mono && git clean -fdx && NOCONFIGURE=1 ./autogen.sh && \
+    cd /root/${mono_version} && git clean -fdx && NOCONFIGURE=1 ./autogen.sh && \
     cd /root/godot-mono-builds && \
     python3 bcl.py make --product=android && \
     cd /root && \
-    rm -rf /root/mono /root/godot-mono-builds
+    rm -rf /root/${mono_version} /root/godot-mono-builds
 
 CMD /bin/bash

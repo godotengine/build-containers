@@ -2,13 +2,11 @@ ARG img_version
 FROM godot-mono:${img_version}
 
 ARG mono_version
-ARG mono_commit
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
     dnf -y install --setopt=install_weak_deps=False \
       automake autoconf bzip2-devel clang libicu-devel libtool libxml2-devel llvm-devel openssl-devel yasm && \
-    dnf clean all && \
-    git clone https://github.com/tpoechtrager/osxcross.git && \
+    git clone --progress https://github.com/tpoechtrager/osxcross.git && \
     cd /root/osxcross && \
     git checkout 542acc2ef6c21aeb3f109c03748b1015a71fed63 && \
     ln -s /root/files/MacOSX10.14.sdk.tar.xz /root/osxcross/tarballs && \
@@ -17,11 +15,8 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
 ENV OSXCROSS_ROOT=/root/osxcross
 ENV PATH="/root/osxcross/target/bin:${PATH}"
 
-RUN git clone https://github.com/mono/mono --branch ${mono_version} --single-branch && \
-    cd /root/mono && \
-    if [ ! -z "${mono_commit}" ]; then git checkout ${mono_commit}; fi && \
-    git submodule update --init && \
-    git apply -3 /root/files/patches/mono-unity-Clear-TLS-instead-of-aborting.patch && \
+RUN cp -a /root/files/${mono_version} /root && \
+    cd /root/${mono_version} && \
     export CMAKE=/root/osxcross/target/bin/x86_64-apple-darwin18-cmake && \
     NOCONFIGURE=1 ./autogen.sh && \
     ./configure --prefix=/root/dependencies/mono \
@@ -46,8 +41,6 @@ RUN git clone https://github.com/mono/mono --branch ${mono_version} --single-bra
     mkdir -p /root/dependencies/mono/etc && \
     cp -rvp /etc/mono /root/dependencies/mono/etc/ && \
     cp /root/files/mono-config-macosx /root/dependencies/mono/etc/mono/config && \
-    rm -rf /root/mono
-
-ENV MONO64_PREFIX=/root/dependencies/mono
+    rm -rf /root/${mono_version}
 
 CMD /bin/bash
