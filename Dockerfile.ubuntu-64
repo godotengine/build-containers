@@ -1,7 +1,6 @@
 FROM ubuntu:trusty
 
 ARG mono_version
-ARG mono_commit
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
     apt-get update && \
@@ -21,19 +20,15 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     ln -sf /usr/bin/gcc-8 /usr/bin/gcc && \
     ln -sf /usr/bin/g++-8 /usr/bin/g++
 
-RUN cd /root && \
-    git clone https://github.com/mono/mono --branch ${mono_version} --single-branch && \
-    cd /root/mono && \
-    if [ ! -z "${mono_commit}" ]; then git checkout ${mono_commit}; fi && \
-    git submodule update --init && \
-    git apply -3 /root/files/patches/mono-unity-Clear-TLS-instead-of-aborting.patch && \
+RUN cp -a /root/files/${mono_version} /root && \
+    cd /root/${mono_version} && \
     NOCONFIGURE=1 ./autogen.sh && \
     ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var/lib/mono --disable-boehm --host=x86_64-linux-gnu && \
     make -j && \
     make install && \
     cd /root && \
+    rm -rf /root/${mono_version} && \
     cert-sync /etc/ssl/certs/ca-certificates.crt && \
-    rm -rf /root/mono && \
     wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild_16.3+xamarinxplat.2019.08.08.00.55-0xamarin2+ubuntu1604b1_all.deb && \
     wget https://download.mono-project.com/repo/ubuntu/pool/main/c/core-setup/msbuild-libhostfxr_3.0.0.2019.04.16.02.13-0xamarin3+ubuntu1604b1_amd64.deb && \
     wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild-sdkresolver_16.3+xamarinxplat.2019.08.08.00.55-0xamarin2+ubuntu1604b1_all.deb && \

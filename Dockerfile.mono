@@ -2,28 +2,23 @@ ARG img_version
 FROM godot-fedora:${img_version}
 
 ARG mono_version
-ARG mono_commit
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
     dnf -y install --setopt=install_weak_deps=False \
       autoconf automake cmake gcc gcc-c++ gettext libtool perl python && \
-    dnf clean all && \
-    git clone https://github.com/mono/mono --branch ${mono_version} --single-branch && \
-    cd /root/mono && \
-    if [ ! -z "${mono_commit}" ]; then git checkout ${mono_commit}; fi && \
-    git submodule update --init && \
-    git apply -3 /root/files/patches/mono-unity-Clear-TLS-instead-of-aborting.patch && \
+    cp -a /root/files/${mono_version} /root && \
+    cd /root/${mono_version} && \
     NOCONFIGURE=1 ./autogen.sh && \
     ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var/lib/mono --disable-boehm && \
     make -j && \
     make install && \
     cd /root && \
+    rm -rf /root/${mono_version} && \
     cert-sync /etc/pki/tls/certs/ca-bundle.crt && \
     rpm -ivh --nodeps \
       https://download.mono-project.com/repo/centos8-stable/m/msbuild/msbuild-16.3+xamarinxplat.2019.08.08.00.55-0.xamarin.2.epel8.noarch.rpm \
       https://download.mono-project.com/repo/centos8-stable/m/msbuild-libhostfxr/msbuild-libhostfxr-3.0.0.2019.04.16.02.13-0.xamarin.4.epel8.x86_64.rpm \
       https://download.mono-project.com/repo/centos8-stable/m/msbuild/msbuild-sdkresolver-16.3+xamarinxplat.2019.08.08.00.55-0.xamarin.2.epel8.noarch.rpm \
-      https://download.mono-project.com/repo/centos8-stable/n/nuget/nuget-5.2.0.6090.bin-0.xamarin.1.epel8.noarch.rpm && \
-    rm -rf /root/mono
+      https://download.mono-project.com/repo/centos8-stable/n/nuget/nuget-5.2.0.6090.bin-0.xamarin.1.epel8.noarch.rpm
 
 CMD /bin/bash
