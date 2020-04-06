@@ -13,12 +13,12 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     apt-get -y update && \
     apt-get -y install --no-install-recommends \
       autoconf automake bzip2 cmake curl gettext git libtool make perl scons xz-utils \
-      gcc-8 g++-8 libudev-dev libx11-dev libxcursor-dev libxrandr-dev libasound2-dev libpulse-dev \
+      gcc-9 g++-9 libudev-dev libx11-dev libxcursor-dev libxrandr-dev libasound2-dev libpulse-dev \
       libgl1-mesa-dev libglu1-mesa-dev libxi-dev libxinerama-dev yasm && \
-    ln -sf /usr/bin/gcc-ranlib-8 /usr/bin/gcc-ranlib && \
-    ln -sf /usr/bin/gcc-ar-8 /usr/bin/gcc-ar && \
-    ln -sf /usr/bin/gcc-8 /usr/bin/gcc && \
-    ln -sf /usr/bin/g++-8 /usr/bin/g++
+    ln -sf /usr/bin/gcc-ranlib-9 /usr/bin/gcc-ranlib && \
+    ln -sf /usr/bin/gcc-ar-9 /usr/bin/gcc-ar && \
+    ln -sf /usr/bin/gcc-9 /usr/bin/gcc && \
+    ln -sf /usr/bin/g++-9 /usr/bin/g++
 
 RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
