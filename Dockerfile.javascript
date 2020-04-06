@@ -16,6 +16,7 @@ RUN if [ -z "${mono_version}" ]; then printf "\n\nArgument mono_version is manda
 RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
     patch -p1 < /root/files/patches/mono-pr16636-wasm-bugfix-and-update.diff && \
+    patch -p1 < /root/files/patches/mono-pr17094-bump-emscripten-1.38.46.patch && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
     export make="make -j" && \
     git clone --progress https://github.com/godotengine/godot-mono-builds /root/godot-mono-builds && \
