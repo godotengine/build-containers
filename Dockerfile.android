@@ -19,16 +19,13 @@ ENV ANDROID_NDK_ROOT=/root/sdk/ndk-bundle/
 RUN cp -a /root/files/${mono_version} /root && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
     export make="make -j" && \
-    git clone --progress https://github.com/godotengine/godot-mono-builds /root/godot-mono-builds && \
-    cd /root/godot-mono-builds && \
-    git checkout 710b275fbf29ddb03fd5285c51782951a110cdab && \
-    python3 patch_mono.py && \
+    cd /root/${mono_version}/godot-mono-builds && \
     python3 android.py configure --target=all-runtime && \
     python3 android.py make --target=all-runtime && \
     cd /root/${mono_version} && git clean -fdx && NOCONFIGURE=1 ./autogen.sh && \
-    cd /root/godot-mono-builds && \
+    cd /root/${mono_version}/godot-mono-builds && \
     python3 bcl.py make --product=android && \
     cd /root && \
-    rm -rf /root/${mono_version} /root/godot-mono-builds
+    rm -rf /root/${mono_version}
 
 CMD /bin/bash
