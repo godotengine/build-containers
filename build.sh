@@ -91,7 +91,7 @@ if [ ! -e ${mono_root} ]; then
   # Set up godot-mono-builds in tree
   git clone --progress https://github.com/godotengine/godot-mono-builds
   pushd godot-mono-builds
-  git checkout a120a65774d206e432d2971457977aa29aca9188
+  git checkout 562afa310ef78974b2986154220e26f58e83a72e
   export MONO_SOURCE_ROOT=${mono_root}
   python3 patch_mono.py
   popd
@@ -123,8 +123,8 @@ if [ ! -e files/MacOSX10.14.sdk.tar.xz ] || [ ! -e files/iPhoneOS12.4.sdk.tar.xz
   $podman run -it --rm -v ${files_root}/files:/root/files godot-xcode-packer:${img_version} 2>&1 | tee logs/xcode_packer.log
 fi
 
-$podman_build -t godot-ios:${img_version} -f Dockerfile.ios -v ${files_root}:/root/files . 2>&1 | tee logs/ios.log
 $podman_build_mono -t godot-osx:${img_version} -f Dockerfile.osx . 2>&1 | tee logs/osx.log
+$podman_build_mono -t godot-ios:${img_version} -f Dockerfile.ios . 2>&1 | tee logs/ios.log
 
 if [ ! -e files/msvc2017.tar ]; then
   echo

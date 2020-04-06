@@ -1,5 +1,5 @@
 ARG img_version
-FROM godot-fedora:${img_version}
+FROM godot-osx:${img_version}
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       automake autoconf clang gcc gcc-c++ gcc-objc gcc-objc++ cmake libicu-devel libtool libxml2-devel llvm-devel openssl-devel perl python yasm && \
@@ -20,5 +20,26 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     ln -s /root/ioscross/x86_64/bin /root/ioscross/x86_64/usr/bin
 
 ENV OSXCROSS_IOS=not_nothing
+ENV IOSCROSS_ROOT=/root/ioscross
+ENV PATH="/root/ioscross/arm64/bin:/root/ioscross/x86_64/bin:${PATH}"
+
+RUN cp -a /root/files/${mono_version} /root && \
+    cd /root/${mono_version}/godot-mono-builds && \
+    export MONO_SOURCE_ROOT=/root/${mono_version} && \
+    python3 ios.py configure -j --verbose --target=arm64 --ios-toolchain ${IOSCROSS_ROOT}/arm64 --ios-sdk ${IOSCROSS_ROOT}/arm64/SDK/iPhoneOS12.4.sdk --osx-toolchain ${OSXCROSS_ROOT} && \
+    python3 ios.py make -j --verbose --target=arm64 && \
+    python3 ios.py configure -j --target=x86_64 --ios-toolchain ${IOSCROSS_ROOT}/x86_64 --ios-sdk ${IOSCROSS_ROOT}/x86_64/SDK/iPhoneOS12.4.sdk --osx-toolchain ${OSXCROSS_ROOT} && \
+    python3 ios.py make -j --target=x86_64 && \
+    python3 bcl.py make -j --product=ios && \
+    # TODO: Emable once godot-mono-builds supports osxcross for the cross-compiler.
+    # It requires having a build of libclang with support for iOS arm64 + changes to the build scripts.
+    #python3 ios.py configure -j --target=cross-arm64 --ios-toolchain ${IOSCROSS_ROOT}/arm64 --ios-sdk ${IOSCROSS_ROOT}/arm64/SDK/iPhoneOS12.4.sdk --osx-toolchain ${OSXCROSS_ROOT} && \
+    #python3 ios.py make -j --target=cross-arm64 && \
+    cd /root && \
+    rm -rf /root/${mono_version}
+
+# Until we can build the cross-compiler, we include a pre-made build in the container.
+RUN mkdir -p /root/aot-compilers/iphone-arm64 && \
+    tar xvf /root/files/aarch64-apple-darwin-mono-sgen.tar.xz -C /root/aot-compilers/iphone-arm64
 
 CMD /bin/bash
