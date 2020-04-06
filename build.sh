@@ -1,54 +1,101 @@
 #!/bin/bash
-
 set -e
 
-podman=podman
-if ! which $podman; then
-  podman=docker
+podman=`which podman`
+if [ -z $podman ]; then
+  podman=`which docker`
 fi
 
-if ! which $podman; then
+if [ -z $podman ]; then
   echo "Either podman or docker need to be in PATH for this script to work."
   exit 1
 fi
 
-if [ -z "$1" ]; then
-  echo "usage: $0 <godot branch> <mono version string> [<mono branch> <mono commit hash>]"
+if [ -z "$1" -o -z "$2" ]; then
+  echo "Usage: $0 <godot branch> <mono version> [<mono branch> <mono commit hash>]"
   echo
   echo "Examples: $0 3.1 mono-5.18.1.3"
-  echo "          $0 master mono-6.6.0.160 2019-08 bef1e6335812d32f8eab648c0228fc624b9f8357"
+  echo "	$0 master mono-6.6.0.160 2019-08 bef1e6335812d32f8eab648c0228fc624b9f8357"
   echo
+  echo "godot branch:"
+  echo "mono version:"
+  echo "	These are combined to form the docker image tag, e.g. 'master-mono-6.6.0.160'."
+  echo "	Git will then clone the branch/tag that matches the mono version."
+  echo 
+  echo "mono branch:"
+  echo "	If specified, git will clone this mono branch/tag instead. Requires specifying a commit."
+  echo
+  echo "mono commit:"
+  echo "	If specified, git will check out this commit after cloning."
+  echo 
   exit 1
 fi
 
 godot_branch=$1
 mono_version=$2
 img_version=$godot_branch-$mono_version
+files_root=$(pwd)/files
 mono_commit=
+mono_commit_str=
+
+# If optional Mono git branch and commit hash were passed, use them.
 if [ ! -z "$3" -a ! -z "$4" ]; then
-  # Optional Mono git branch and commit hash were passed,
-  # use that for the git clones.
   mono_version=$3
   mono_commit=$4
+  mono_commit_str="-${mono_commit:0:6}"
 fi
-echo "Building images with version: ${img_version}"
-echo "Mono version used: ${mono_version} ${mono_commit}"
+
+# If mono branch does not start with mono-, prepend it to the folder name.
+if [ ${mono_version:0:5} != "mono-" ]; then
+  mono_root="${files_root}/mono-${mono_version}${mono_commit_str}"
+else
+  mono_root="${files_root}/${mono_version}${mono_commit_str}"
+fi
+
+# Confirm settings
+echo "Docker image tag: ${img_version}"
+echo "Mono branch: ${mono_version}"
+if [ ! -z "$mono_commit" ]; then
+  echo "Mono commit: ${mono_commit}"
+fi
+if [ -e ${mono_root} ]; then
+  mono_exists="(exists)"
+fi
+echo "Mono source folder: ${mono_root} ${mono_exists}"
 echo
 while true; do
-    read -p "Is this correct? [y/n] " yn
-    case $yn in
-        [Yy]* ) break;;
-        [Nn]* ) exit 1;;
-        * ) echo "Please answer yes or no.";;
-    esac
+  read -p "Is this correct? [y/n] " yn
+  case $yn in
+    [Yy]* ) break;;
+    [Nn]* ) exit 1;;
+    * ) echo "Please answer yes or no.";;
+  esac
 done
 
 mkdir -p logs
 
-export podman_build="$podman build --build-arg img_version=${img_version}"
-export podman_build_mono="$podman_build --build-arg mono_version=${mono_version} --build-arg mono_commit=${mono_commit} -v $(pwd)/files:/root/files"
+# Check out and patch Mono version
+if [ ! -e ${mono_root} ]; then
+  if [ ! -z "${mono_commit}" ]; then 
+    # If a commit is specified, get the full history
+    git clone -b ${mono_version} --single-branch --progress https://github.com/mono/mono ${mono_root}
+    pushd ${mono_root}
+    git checkout ${mono_commit} 
+  else
+    # Otherwise, get a shallow repo
+    git clone -b ${mono_version} --single-branch --progress --depth 1 https://github.com/mono/mono ${mono_root}
+    pushd ${mono_root}
+  fi
+  # Download all submodules, up to 6 at a time
+  git submodule update --init --recursive --recommend-shallow -j 6 --progress
+  patch -p1 < ${files_root}/patches/mono-unity-Clear-TLS-instead-of-aborting.patch 
+  popd
+fi
 
-$podman build -t godot-fedora:${img_version} -f Dockerfile.base . 2>&1 | tee logs/base.log
+export podman_build="$podman build --build-arg img_version=${img_version}"
+export podman_build_mono="$podman_build --build-arg mono_version=${mono_version} -v ${files_root}:/root/files"
+
+$podman build -v ${files_root}:/root/files -t godot-fedora:${img_version} -f Dockerfile.base . 2>&1 | tee logs/base.log
 $podman_build -t godot-export:${img_version} -f Dockerfile.export . 2>&1 | tee logs/export.log
 
 $podman_build_mono -t godot-mono:${img_version} -f Dockerfile.mono . 2>&1 | tee logs/mono.log
@@ -56,10 +103,8 @@ $podman_build_mono -t godot-mono-glue:${img_version} -f Dockerfile.mono-glue . 2
 $podman_build_mono -t godot-windows:${img_version} -f Dockerfile.windows --ulimit nofile=65536 . 2>&1 | tee logs/windows.log
 $podman_build_mono -t godot-ubuntu-64:${img_version} -f Dockerfile.ubuntu-64 . 2>&1 | tee logs/ubuntu-64.log
 $podman_build_mono -t godot-ubuntu-32:${img_version} -f Dockerfile.ubuntu-32 . 2>&1 | tee logs/ubuntu-32.log
-$podman_build_mono -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
 $podman_build_mono -t godot-javascript:${img_version} -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
-
-$podman_build -t godot-xcode-packer:${img_version} -f Dockerfile.xcode -v $(pwd)/files:/root/files . 2>&1 | tee logs/xcode.log
+$podman_build_mono -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
 
 if [ ! -e files/MacOSX10.14.sdk.tar.xz ] || [ ! -e files/iPhoneOS12.4.sdk.tar.xz ] || [ ! -e files/iPhoneSimulator12.4.sdk.tar.xz ]; then
   if [ ! -e files/Xcode_10.3.xip ]; then
@@ -68,10 +113,11 @@ if [ ! -e files/MacOSX10.14.sdk.tar.xz ] || [ ! -e files/iPhoneOS12.4.sdk.tar.xz
   fi
 
   echo "Building OSX and iOS SDK packages. This will take a while"
-  $podman run -it --rm -v $(pwd)/files:/root/files godot-xcode-packer:${img_version} 2>&1 | tee logs/xcode_packer.log
+  $podman_build -t godot-xcode-packer:${img_version} -f Dockerfile.xcode -v ${files_root}:/root/files . 2>&1 | tee logs/xcode.log
+  $podman run -it --rm -v ${files_root}/files:/root/files godot-xcode-packer:${img_version} 2>&1 | tee logs/xcode_packer.log
 fi
 
-$podman_build -t godot-ios:${img_version} -f Dockerfile.ios -v $(pwd)/files:/root/files . 2>&1 | tee logs/ios.log
+$podman_build -t godot-ios:${img_version} -f Dockerfile.ios -v ${files_root}:/root/files . 2>&1 | tee logs/ios.log
 $podman_build_mono -t godot-osx:${img_version} -f Dockerfile.osx . 2>&1 | tee logs/osx.log
 
 if [ ! -e files/msvc2017.tar ]; then
@@ -86,4 +132,4 @@ if [ ! -e files/msvc2017.tar ]; then
   exit 1
 fi
 
-$podman_build -t godot-msvc:${img_version} -f Dockerfile.msvc -v $(pwd)/files:/root/files . 2>&1 | tee logs/msvc.log
+$podman_build -t godot-msvc:${img_version} -f Dockerfile.msvc -v ${files_root}:/root/files . 2>&1 | tee logs/msvc.log
