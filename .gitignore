@@ -8,4 +8,5 @@
 *.zip
 *.xip
 
+files/mono-*/
 logs/

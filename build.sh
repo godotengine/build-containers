@@ -21,13 +21,13 @@ if [ -z "$1" -o -z "$2" ]; then
   echo "mono version:"
   echo "	These are combined to form the docker image tag, e.g. 'master-mono-6.6.0.160'."
   echo "	Git will then clone the branch/tag that matches the mono version."
-  echo 
+  echo
   echo "mono branch:"
   echo "	If specified, git will clone this mono branch/tag instead. Requires specifying a commit."
   echo
   echo "mono commit:"
   echo "	If specified, git will check out this commit after cloning."
-  echo 
+  echo
   exit 1
 fi
 
@@ -76,11 +76,11 @@ mkdir -p logs
 
 # Check out and patch Mono version
 if [ ! -e ${mono_root} ]; then
-  if [ ! -z "${mono_commit}" ]; then 
+  if [ ! -z "${mono_commit}" ]; then
     # If a commit is specified, get the full history
     git clone -b ${mono_version} --single-branch --progress https://github.com/mono/mono ${mono_root}
     pushd ${mono_root}
-    git checkout ${mono_commit} 
+    git checkout ${mono_commit}
   else
     # Otherwise, get a shallow repo
     git clone -b ${mono_version} --single-branch --progress --depth 1 https://github.com/mono/mono ${mono_root}
@@ -88,7 +88,14 @@ if [ ! -e ${mono_root} ]; then
   fi
   # Download all submodules, up to 6 at a time
   git submodule update --init --recursive --recommend-shallow -j 6 --progress
-  patch -p1 < ${files_root}/patches/mono-unity-Clear-TLS-instead-of-aborting.patch 
+  patch -p1 < ${files_root}/patches/mono-unity-Clear-TLS-instead-of-aborting.patch
+  # Set up godot-mono-builds in tree
+  git clone --progress https://github.com/godotengine/godot-mono-builds
+  pushd godot-mono-builds
+  git checkout 710b275fbf29ddb03fd5285c51782951a110cdab
+  export MONO_SOURCE_ROOT=${mono_root}
+  python3 patch_mono.py
+  popd
   popd
 fi
 
