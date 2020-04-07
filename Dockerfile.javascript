@@ -18,14 +18,13 @@ RUN cp -a /root/files/${mono_version} /root && \
     patch -p1 < /root/files/patches/mono-pr16636-wasm-bugfix-and-update.diff && \
     patch -p1 < /root/files/patches/mono-pr17094-bump-emscripten-1.38.46.patch && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
-    export make="make -j" && \
     cd /root/${mono_version}/godot-mono-builds && \
     python3 patch_emscripten.py && \
-    python3 wasm.py configure --target=runtime && \
-    python3 wasm.py make --target=runtime && \
+    python3 wasm.py configure -j --target=runtime && \
+    python3 wasm.py make -j --target=runtime && \
     cd /root/${mono_version} && git clean -fdx && NOCONFIGURE=1 ./autogen.sh && \
     cd /root/${mono_version}/godot-mono-builds && \
-    python3 bcl.py make --product wasm && \
+    python3 bcl.py make -j --product wasm && \
     cd /root && \
     rm -rf /root/${mono_version}
 
