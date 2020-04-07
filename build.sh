@@ -88,7 +88,6 @@ if [ ! -e ${mono_root} ]; then
   fi
   # Download all submodules, up to 6 at a time
   git submodule update --init --recursive --recommend-shallow -j 6 --progress
-  patch -p1 < ${files_root}/patches/mono-unity-Clear-TLS-instead-of-aborting.patch
   # Set up godot-mono-builds in tree
   git clone --progress https://github.com/godotengine/godot-mono-builds
   pushd godot-mono-builds
