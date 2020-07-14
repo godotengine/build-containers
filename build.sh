@@ -1,13 +1,10 @@
 #!/bin/bash
 set -e
 
-podman=`which podman`
-if [ -z $podman ]; then
-  podman=`which docker`
-fi
+podman=`which podman || true`
 
 if [ -z $podman ]; then
-  echo "Either podman or docker need to be in PATH for this script to work."
+  echo "podman needs to be in PATH for this script to work."
   exit 1
 fi
 
@@ -120,7 +117,7 @@ if [ ! -e files/MacOSX10.14.sdk.tar.xz ] || [ ! -e files/iPhoneOS12.4.sdk.tar.xz
 
   echo "Building OSX and iOS SDK packages. This will take a while"
   $podman_build -t godot-xcode-packer:${img_version} -f Dockerfile.xcode -v ${files_root}:/root/files . 2>&1 | tee logs/xcode.log
-  $podman run -it --rm -v ${files_root}/files:/root/files godot-xcode-packer:${img_version} 2>&1 | tee logs/xcode_packer.log
+  $podman run -it --rm -v ${files_root}:/root/files godot-xcode-packer:${img_version} 2>&1 | tee logs/xcode_packer.log
 fi
 
 $podman_build_mono -t godot-osx:${img_version} -f Dockerfile.osx . 2>&1 | tee logs/osx.log
