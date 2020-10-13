@@ -1,0 +1,58 @@
+From 8daffc3e4c562560f9e5c4d643bc38e5350eff31 Mon Sep 17 00:00:00 2001
+From: Zoltan Varga <vargaz@gmail.com>
+Date: Sun, 8 Mar 2020 00:16:18 -0500
+Subject: [PATCH] Bump emscripten to 1.39.9. (#19147)
+
+---
+ sdks/builds/emscripten-pr-8457.diff | 20 --------------------
+ sdks/builds/wasm.mk                 |  3 +--
+ 2 files changed, 1 insertion(+), 22 deletions(-)
+ delete mode 100644 sdks/builds/emscripten-pr-8457.diff
+
+diff --git a/sdks/builds/emscripten-pr-8457.diff b/sdks/builds/emscripten-pr-8457.diff
+deleted file mode 100644
+index 3a03bf669ec8..000000000000
+--- a/sdks/builds/emscripten-pr-8457.diff
++++ /dev/null
+@@ -1,20 +0,0 @@
+---- a/emcc.py	2019-08-13 20:07:34.000000000 -0500
+-+++ b/emcc.py	2019-08-27 08:05:39.000000000 -0500
+-@@ -915,7 +918,7 @@
+-         file_suffix = get_file_suffix(arg)
+-         if file_suffix in SOURCE_ENDINGS + BITCODE_ENDINGS + DYNAMICLIB_ENDINGS + ASSEMBLY_ENDINGS + HEADER_ENDINGS or shared.Building.is_ar(arg): # we already removed -o <target>, so all these should be inputs
+-           newargs[i] = ''
+--          if file_suffix.endswith(SOURCE_ENDINGS):
+-+          if file_suffix.endswith(SOURCE_ENDINGS) or (has_dash_c and file_suffix.endswith(OBJECT_FILE_ENDINGS)):
+-             input_files.append((i, arg))
+-             has_source_inputs = True
+-           elif file_suffix.endswith(HEADER_ENDINGS):
+-@@ -1838,7 +1840,7 @@
+-       # First, generate LLVM bitcode. For each input file, we get base.o with bitcode
+-       for i, input_file in input_files:
+-         file_ending = get_file_suffix(input_file)
+--        if file_ending.endswith(SOURCE_ENDINGS):
+-+        if file_ending.endswith(SOURCE_ENDINGS) or (has_dash_c and file_ending.endswith(OBJECT_FILE_ENDINGS)):
+-           compile_source_file(i, input_file)
+-         else: # bitcode
+-           if file_ending.endswith(BITCODE_ENDINGS):
+diff --git a/sdks/builds/wasm.mk b/sdks/builds/wasm.mk
+index 520e04c48cbc..53ed93cc0c8c 100644
+--- a/sdks/builds/wasm.mk
++++ b/sdks/builds/wasm.mk
+@@ -1,7 +1,7 @@
+ #emcc has lots of bash'isms
+ SHELL:=/bin/bash
+ 
+-EMSCRIPTEN_VERSION=1.39.7
++EMSCRIPTEN_VERSION=1.39.9
+ EMSCRIPTEN_LOCAL_SDK_DIR=$(TOP)/sdks/builds/toolchains/emsdk
+ 
+ EMSCRIPTEN_SDK_DIR ?= $(EMSCRIPTEN_LOCAL_SDK_DIR)
+@@ -29,7 +29,6 @@ $(EMSCRIPTEN_SDK_DIR)/.emscripten: | $(EMSCRIPTEN_SDK_DIR)
+ 	cd $(TOP)/sdks/builds/toolchains/emsdk && ./emsdk install $(EMSCRIPTEN_VERSION)
+ 	cd $(TOP)/sdks/builds/toolchains/emsdk && ./emsdk activate --embedded $(EMSCRIPTEN_VERSION)
+ 	cd $(TOP)/sdks/builds/toolchains/emsdk/upstream/emscripten && (patch -N -p1 < $(TOP)/sdks/builds/fix-emscripten-8511.diff; exit 0)
+-	cd $(TOP)/sdks/builds/toolchains/emsdk/upstream/emscripten && (patch -N -p1 < $(TOP)/sdks/builds/emscripten-pr-8457.diff; exit 0)
+ 	touch $@
+ 
+ .PHONY: provision-wasm

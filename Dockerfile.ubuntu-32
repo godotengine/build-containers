@@ -13,12 +13,12 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     apt-get -y update && \
     apt-get -y install --no-install-recommends \
       autoconf automake bzip2 cmake curl gettext git libtool make perl scons xz-utils \
-      gcc-8 g++-8 libudev-dev libx11-dev libxcursor-dev libxrandr-dev libasound2-dev libpulse-dev \
+      gcc-9 g++-9 libudev-dev libx11-dev libxcursor-dev libxrandr-dev libasound2-dev libpulse-dev \
       libgl1-mesa-dev libglu1-mesa-dev libxi-dev libxinerama-dev yasm && \
-    ln -sf /usr/bin/gcc-ranlib-8 /usr/bin/gcc-ranlib && \
-    ln -sf /usr/bin/gcc-ar-8 /usr/bin/gcc-ar && \
-    ln -sf /usr/bin/gcc-8 /usr/bin/gcc && \
-    ln -sf /usr/bin/g++-8 /usr/bin/g++
+    ln -sf /usr/bin/gcc-ranlib-9 /usr/bin/gcc-ranlib && \
+    ln -sf /usr/bin/gcc-ar-9 /usr/bin/gcc-ar && \
+    ln -sf /usr/bin/gcc-9 /usr/bin/gcc && \
+    ln -sf /usr/bin/g++-9 /usr/bin/g++
 
 RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
@@ -29,10 +29,10 @@ RUN cp -a /root/files/${mono_version} /root && \
     cd /root && \
     rm -rf /root/${mono_version} && \
     cert-sync /etc/ssl/certs/ca-certificates.crt && \
-    wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild_16.3+xamarinxplat.2019.08.08.00.55-0xamarin2+ubuntu1604b1_all.deb && \
-    wget https://download.mono-project.com/repo/ubuntu/pool/main/c/core-setup/msbuild-libhostfxr_3.0.0.2019.04.16.02.13-0xamarin3+ubuntu1604b1_i386.deb && \
-    wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild-sdkresolver_16.3+xamarinxplat.2019.08.08.00.55-0xamarin2+ubuntu1604b1_all.deb && \
-    wget https://download.mono-project.com/repo/ubuntu/pool/main/n/nuget/nuget_5.2.0.6090.bin-0xamarin1+ubuntu1604b1_all.deb && \
+    wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild_16.6+xamarinxplat.2020.04.29.14.43-0xamarin5+ubuntu1604b1_all.deb && \
+    wget https://download.mono-project.com/repo/ubuntu/pool/main/c/core-setup/msbuild-libhostfxr_3.0.0.2019.04.16.02.13-0xamarin4+ubuntu1604b1_i386.deb && \
+    wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild-sdkresolver_16.6+xamarinxplat.2020.04.29.14.43-0xamarin5+ubuntu1604b1_all.deb && \
+    wget https://download.mono-project.com/repo/ubuntu/pool/main/n/nuget/nuget_5.5.0.6382.bin-0xamarin1+ubuntu1604b1_all.deb && \
     dpkg -i --force-all *.deb && \
     sed -i '/Depends.*mono/d' /var/lib/dpkg/status && \
     ln -s /usr/bin/mono /usr/bin/cli && \

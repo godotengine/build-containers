@@ -5,7 +5,7 @@ ARG mono_version
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
     dnf -y install --setopt=install_weak_deps=False \
-      mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static mingw64-gcc mingw64-gcc-c++ mingw64-winpthreads-static yasm wine && \
+      mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static mingw64-gcc mingw64-gcc-c++ mingw64-winpthreads-static wine && \
     cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
     patch -p1 < /root/files/patches/wine-mono.patch && \

@@ -39,7 +39,7 @@ mono_commit_str=
 if [ ! -z "$3" -a ! -z "$4" ]; then
   mono_version=$3
   mono_commit=$4
-  mono_commit_str="-${mono_commit:0:6}"
+  mono_commit_str="-${mono_commit:0:7}"
 fi
 
 # If mono branch does not start with mono-, prepend it to the folder name.
@@ -88,7 +88,7 @@ if [ ! -e ${mono_root} ]; then
   # Set up godot-mono-builds in tree
   git clone --progress https://github.com/godotengine/godot-mono-builds
   pushd godot-mono-builds
-  git checkout 562afa310ef78974b2986154220e26f58e83a72e
+  git checkout b4c77dcfb6f38f660e73f60c4ae03e11173ac8fd
   export MONO_SOURCE_ROOT=${mono_root}
   python3 patch_mono.py
   popd
