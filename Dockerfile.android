@@ -5,15 +5,15 @@ ARG mono_version
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
     dnf -y install --setopt=install_weak_deps=False \
-      gcc gcc-c++ java-1.8.0-openjdk-devel ncurses-compat-libs && \
-    mkdir sdk && cd sdk && \
+      java-1.8.0-openjdk-devel ncurses-compat-libs && \
+    mkdir -p sdk/cmdline-tools && cd sdk/cmdline-tools && \
     curl -LO https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip && \
     unzip commandlinetools-linux-6609375_latest.zip && \
     rm commandlinetools-linux-6609375_latest.zip && \
     yes | tools/bin/sdkmanager --licenses && \
     tools/bin/sdkmanager 'ndk;21.3.6528147' 'build-tools;29.0.3' 'platforms;android-29' 'cmake;3.10.2.4988404'
 
-ENV ANDROID_HOME=/root/sdk/
+ENV ANDROID_SDK_ROOT=/root/sdk/
 ENV ANDROID_NDK_ROOT=/root/sdk/ndk/21.3.6528147/
 
 RUN cp -a /root/files/${mono_version} /root && \
