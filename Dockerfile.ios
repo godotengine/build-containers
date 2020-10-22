@@ -30,7 +30,7 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     patch -p1 < /root/files/patches/mono-xcode-allow-weak-import.patch && \
     patch -p1 < /root/files/patches/mono-sys-uio-fix-preadv-misdetection.patch && \
     cd godot-mono-builds && \
-    sed -i ios.py -e '/no_weak_imports/d' && \
+    export DISABLE_NO_WEAK_IMPORTS=1 && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
     python3 ios.py configure -j --verbose --target=arm64 --ios-toolchain ${IOSCROSS_ROOT}/arm64 --ios-sdk ${IOSCROSS_ROOT}/arm64/SDK/iPhoneOS14.0.sdk --osx-toolchain ${OSXCROSS_ROOT} && \
     python3 ios.py make -j --verbose --target=arm64 && \
