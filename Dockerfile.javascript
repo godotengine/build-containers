@@ -15,10 +15,8 @@ RUN if [ -z "${mono_version}" ]; then printf "\n\nArgument mono_version is manda
     source /root/emsdk/emsdk_env.sh && \
     cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
-    patch -p1 < /root/files/patches/mono-emscripten-1.39.9.patch && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
     cd /root/${mono_version}/godot-mono-builds && \
-    sed -i patch_emscripten.py -e "/emscripten-pr-8457.diff/d" && \
     python3 patch_emscripten.py && \
     python3 wasm.py configure -j --target=runtime && \
     python3 wasm.py make -j --target=runtime && \
