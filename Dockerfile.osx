@@ -17,8 +17,6 @@ ENV PATH="/root/osxcross/target/bin:${PATH}"
 
 RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
-    patch -p1 < /root/files/patches/mono-xcode-allow-weak-import.patch && \
-    patch -p1 < /root/files/patches/mono-sys-uio-fix-preadv-misdetection.patch && \
     export CMAKE=/root/osxcross/target/bin/x86_64-apple-darwin19-cmake && \
     NOCONFIGURE=1 ./autogen.sh && \
     ./configure --prefix=/root/dependencies/mono \
