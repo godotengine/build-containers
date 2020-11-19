@@ -8,8 +8,8 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
       automake autoconf bzip2-devel clang libicu-devel libtool libxml2-devel llvm-devel openssl-devel yasm && \
     git clone --progress https://github.com/tpoechtrager/osxcross.git && \
     cd /root/osxcross && \
-    git checkout 45d2f7ec2ee68c9ad51d590869609b5b3b028605 && \
-    ln -s /root/files/MacOSX10.15.sdk.tar.xz /root/osxcross/tarballs && \
+    git checkout 9d7f6c2461dccb2b2781fff323f231a4b096fe41 && \
+    ln -s /root/files/MacOSX11.0.sdk.tar.xz /root/osxcross/tarballs && \
     UNATTENDED=1 ./build.sh
 
 ENV OSXCROSS_ROOT=/root/osxcross
@@ -17,11 +17,11 @@ ENV PATH="/root/osxcross/target/bin:${PATH}"
 
 RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
-    export CMAKE=/root/osxcross/target/bin/x86_64-apple-darwin19-cmake && \
+    export CMAKE=/root/osxcross/target/bin/x86_64-apple-darwin20-cmake && \
     NOCONFIGURE=1 ./autogen.sh && \
     ./configure --prefix=/root/dependencies/mono \
         --build=x86_64-linux-gnu \
-        --host=x86_64-apple-darwin19 \
+        --host=x86_64-apple-darwin20 \
         --disable-boehm \
         --disable-mcs-build \
         --with-tls=pthread \
