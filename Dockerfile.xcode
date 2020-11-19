@@ -16,9 +16,9 @@ RUN dnf -y install --setopt=install_weak_deps=False \
 
 CMD mkdir -p /root/xcode && \
     cd /root/xcode && \
-    xar -xf /root/files/Xcode_12.0.1.xip && \
+    xar -xf /root/files/Xcode_12.2.xip && \
     /root/pbzx/pbzx -n Content | cpio -i && \
-    export OSX_SDK=MacOSX10.15.sdk && \
+    export OSX_SDK=MacOSX11.0.sdk && \
     cp -r Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk /tmp/${OSX_SDK} && \
     mkdir -p /tmp/${OSX_SDK}/usr/include/c++ && \
     cp -r Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 /tmp/${OSX_SDK}/usr/include/c++/ && \
@@ -30,7 +30,8 @@ CMD mkdir -p /root/xcode && \
     tar -cJf /root/files/${OSX_SDK}.tar.xz ${OSX_SDK} && \
     rm -rf ${OSX_SDK} && \
     cd /root/xcode && \
-    export IOS_SDK=iPhoneOS14.0.sdk && \
+    export IOS_SDK=iPhoneOS14.2.sdk && \
+    export IOS_SIMULATOR_SDK=iPhoneSimulator14.2.sdk && \
     cp -r Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk /tmp/${IOS_SDK} && \
     mkdir -p /tmp/${IOS_SDK}/usr/include/c++ && \
     cp -r Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 /tmp/${IOS_SDK}/usr/include/c++/ && \
@@ -42,5 +43,5 @@ CMD mkdir -p /root/xcode && \
     mkdir -p /tmp/${IOS_SDK}/usr/include/c++ && \
     cp -r Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 /tmp/${IOS_SDK}/usr/include/c++/ && \
     cd /tmp && \
-    tar -cJf /root/files/iPhoneSimulator14.0.sdk.tar.xz ${IOS_SDK} && \
+    tar -cJf /root/files/${IOS_SIMULATOR_SDK}.tar.xz ${IOS_SDK} && \
     rm -rf ${IOS_SDK}
