@@ -6,13 +6,13 @@ ARG mono_version
 RUN if [ -z "${mono_version}" ]; then printf "\n\nArgument mono_version is mandatory!\n\n"; exit 1; fi && \
     dnf -y install --setopt=install_weak_deps=False \
       java-openjdk && \
-    git clone --progress https://github.com/emscripten-core/emsdk && \
-    cd emsdk && \
-    git checkout 1.39.9 && \
-    ./emsdk install 1.39.9 && \
-    ./emsdk activate 1.39.9 && \
-    echo "source /root/emsdk/emsdk_env.sh" >> /root/.bashrc && \
-    source /root/emsdk/emsdk_env.sh && \
+    git clone --branch 2.0.10 --progress https://github.com/emscripten-core/emsdk emsdk_2.0.10 && \
+    cp -r emsdk_2.0.10 emsdk_1.39.9 && \
+    emsdk_2.0.10/emsdk install 2.0.10 && \
+    emsdk_2.0.10/emsdk activate 2.0.10 && \
+    emsdk_1.39.9/emsdk install 1.39.9 && \
+    emsdk_1.39.9/emsdk activate 1.39.9 && \
+    source /root/emsdk_1.39.9/emsdk_env.sh && \
     cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
