@@ -15,7 +15,7 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     unzip commandlinetools-linux-6609375_latest.zip && \
     rm commandlinetools-linux-6609375_latest.zip && \
     yes | tools/bin/sdkmanager --licenses && \
-    tools/bin/sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" 'ndk;${ANDROID_NDK_VERSION}' 'cmdline-tools;latest' 'build-tools;30.0.1' 'platforms;android-30' 'cmake;3.10.2.4988404'
+    tools/bin/sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" "ndk;${ANDROID_NDK_VERSION}" 'cmdline-tools;latest' 'build-tools;30.0.1' 'platforms;android-30' 'cmake;3.10.2.4988404'
 
 RUN cp -a /root/files/${mono_version} /root && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
