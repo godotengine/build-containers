@@ -15,16 +15,22 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     mv usage_examples/ios_toolchain/target/* /root/ioscross/arm64 && \
     mkdir /root/ioscross/arm64/usr && \
     ln -s /root/ioscross/arm64/bin /root/ioscross/arm64/usr/bin && \
+    sed -i 's/miphoneos-version-min/mios-simulator-version-min/g' usage_examples/wrapper.c && \
+    usage_examples/ios_toolchain/build.sh /root/files/iPhoneSimulator${IOS_SDK}.sdk.tar.xz arm64 && \
+    mkdir -p /root/ioscross/arm64_sim && \
+    mv usage_examples/ios_toolchain/target/* /root/ioscross/arm64_sim && \
+    mkdir /root/ioscross/arm64_sim/usr && \
+    ln -s /root/ioscross/arm64_sim/bin /root/ioscross/arm64_sim/usr/bin && \
     sed -i 's#^TRIPLE=.*#TRIPLE="x86_64-apple-darwin11"#' usage_examples/ios_toolchain/build.sh && \
     usage_examples/ios_toolchain/build.sh /root/files/iPhoneSimulator${IOS_SDK}.sdk.tar.xz x86_64 && \
-    mkdir -p /root/ioscross/x86_64 && \
-    mv usage_examples/ios_toolchain/target/* /root/ioscross/x86_64 && \
-    mkdir /root/ioscross/x86_64/usr && \
-    ln -s /root/ioscross/x86_64/bin /root/ioscross/x86_64/usr/bin
+    mkdir -p /root/ioscross/x86_64_sim && \
+    mv usage_examples/ios_toolchain/target/* /root/ioscross/x86_64_sim && \
+    mkdir /root/ioscross/x86_64_sim/usr && \
+    ln -s /root/ioscross/x86_64_sim/bin /root/ioscross/x86_64_sim/usr/bin
 
 ENV OSXCROSS_IOS=not_nothing
 ENV IOSCROSS_ROOT=/root/ioscross
-ENV PATH="/root/ioscross/arm64/bin:/root/ioscross/x86_64/bin:${PATH}"
+ENV PATH="/root/ioscross/arm64/bin:/root/ioscross/arm64_sim/bin:/root/ioscross/x86_64_sim/bin:${PATH}"
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
     cp -a /root/files/${mono_version} /root && \
@@ -33,8 +39,10 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
     python3 ios.py configure -j --verbose --target=arm64 --ios-toolchain ${IOSCROSS_ROOT}/arm64 --ios-sdk ${IOSCROSS_ROOT}/arm64/SDK/iPhoneOS${IOS_SDK}.sdk --osx-toolchain ${OSXCROSS_ROOT} && \
     python3 ios.py make -j --verbose --target=arm64 && \
-    python3 ios.py configure -j --target=x86_64 --ios-toolchain ${IOSCROSS_ROOT}/x86_64 --ios-sdk ${IOSCROSS_ROOT}/x86_64/SDK/iPhoneOS${IOS_SDK}.sdk --osx-toolchain ${OSXCROSS_ROOT} && \
-    python3 ios.py make -j --target=x86_64 && \
+    python3 ios.py configure -j --verbose --target=arm64-sim --ios-toolchain ${IOSCROSS_ROOT}/arm64_sim --ios-sdk ${IOSCROSS_ROOT}/arm64_sim/SDK/iPhoneOS${IOS_SDK}.sdk --osx-toolchain ${OSXCROSS_ROOT} && \
+    python3 ios.py make -j --verbose --target=arm64-sim && \
+    python3 ios.py configure -j --verbose --target=x86_64 --ios-toolchain ${IOSCROSS_ROOT}/x86_64_sim --ios-sdk ${IOSCROSS_ROOT}/x86_64_sim/SDK/iPhoneOS${IOS_SDK}.sdk --osx-toolchain ${OSXCROSS_ROOT} && \
+    python3 ios.py make -j --verbose --target=x86_64 && \
     python3 bcl.py make -j --product=ios && \
     # TODO: Emable once godot-mono-builds supports osxcross for the cross-compiler.
     # It requires having a build of libclang with support for iOS arm64 + changes to the build scripts.
