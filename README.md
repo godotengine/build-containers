@@ -4,5 +4,7 @@ This repository contains the Dockerfiles for the official Godot engine builds. T
 
 ## Building
 
-There is a 'build.sh' script included to build the containers themselves. The in-container build scripts will follow shortly.
+There is a 'build.sh' script included to build the containers themselves.
+
+The in-container build scripts are in a separate repository: https://github.com/godotengine/godot-build-scripts
 
