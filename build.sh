@@ -103,6 +103,7 @@ $podman_build -t godot-export:${img_version} -f Dockerfile.export . 2>&1 | tee l
 
 $podman_build_mono -t godot-mono:${img_version} -f Dockerfile.mono . 2>&1 | tee logs/mono.log
 $podman_build_mono -t godot-mono-glue:${img_version} -f Dockerfile.mono-glue . 2>&1 | tee logs/mono-glue.log
+# The ulimit below is necessary to use Wine to workaround Mono cross-compilation bugs (see GH-32).
 $podman_build_mono -t godot-windows:${img_version} -f Dockerfile.windows --ulimit nofile=65536 . 2>&1 | tee logs/windows.log
 $podman_build_mono -t godot-ubuntu-64:${img_version} -f Dockerfile.ubuntu-64 . 2>&1 | tee logs/ubuntu-64.log
 $podman_build_mono -t godot-ubuntu-32:${img_version} -f Dockerfile.ubuntu-32 . 2>&1 | tee logs/ubuntu-32.log
