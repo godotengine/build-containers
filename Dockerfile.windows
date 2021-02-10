@@ -10,7 +10,8 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     cd /root/${mono_version} && \
     patch -p1 < /root/files/patches/wine-mono.patch && \
     export WINE_BITS=64 && \
-    bash /root/files/mono-build-win32.sh --prefix=/root/dependencies/mono-64 --host=x86_64-w64-mingw32 && \
+    bash /root/files/mono-build-win32.sh --prefix=/root/dependencies/mono-64 --host=x86_64-w64-mingw32 \
+      --with-profile4_x=yes --with-runtime-preset=net_4_x && \
     git clean -fdx && \
     cp /root/dependencies/mono-64/bin/libMonoPosixHelper.dll /root/dependencies/mono-64/bin/MonoPosixHelper.dll && \
     rm -f /root/dependencies/mono-64/bin/mono /root/dependencies/mono-64/bin/mono-sgen && \
@@ -18,7 +19,8 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     ln -s /usr/bin/mono-sgen /root/dependencies/mono-64/bin/mono-sgen && \
     cp -rvp /etc/mono /root/dependencies/mono-64/etc && \
     export WINE_BITS=32 && \
-    bash /root/files/mono-build-win32.sh --prefix=/root/dependencies/mono-32 --host=i686-w64-mingw32 && \
+    bash /root/files/mono-build-win32.sh --prefix=/root/dependencies/mono-32 --host=i686-w64-mingw32 \
+      --with-profile4_x=yes --with-runtime-preset=net_4_x && \
     cd /root && \
     rm -rf /root/${mono_version} && \
     cp /root/dependencies/mono-32/bin/libMonoPosixHelper.dll /root/dependencies/mono-32/bin/MonoPosixHelper.dll && \
