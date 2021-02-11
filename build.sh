@@ -8,6 +8,15 @@ if [ -z $podman ]; then
   exit 1
 fi
 
+if ! grep -rq '/usr/bin/wine' /proc/sys/fs/binfmt_misc; then
+  echo "binfmt_misc support for PE pointing to /usr/bin/wine must be enabled to build the Windows mono container."
+  echo "This can be done by:"
+  echo 'mount binfmt_misc -t binfmt_misc /proc/sys/fs/binfmt_misc'
+  echo 'echo ":windows:M::MZ::/usr/bin/wine:" > /proc/sys/fs/binfmt_misc/register'
+  echo 'echo ":windowsPE:M::PE::/usr/bin/wine:" > /proc/sys/fs/binfmt_misc/register'
+  exit 1
+fi
+
 if [ -z "$1" -o -z "$2" ]; then
   echo "Usage: $0 <godot branch> <mono version> [<mono branch> <mono commit hash>]"
   echo
