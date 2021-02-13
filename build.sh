@@ -122,19 +122,21 @@ $podman_build_mono -t godot-android:${img_version} -f Dockerfile.android . 2>&1 
 XCODE_SDK=12.2
 OSX_SDK=11.0
 IOS_SDK=14.2
-if [ ! -e files/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e files/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e files/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ]; then
+TVOS_SDK=14.2
+if [ ! -e files/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e files/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e files/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ] || [ ! -e files/AppleTVOS${TVOS_SDK}.sdk.tar.xz ] || [ ! -e files/AppleTVSimulator${TVOS_SDK}.sdk.tar.xz ]; then
   if [ ! -e files/Xcode_${XCODE_SDK}.xip ]; then
     echo "files/Xcode_${XCODE_SDK}.xip is required. It can be downloaded from https://developer.apple.com/download/more/ with a valid apple ID."
     exit 1
   fi
 
-  echo "Building OSX and iOS SDK packages. This will take a while"
+  echo "Building OSX, iOS and tvOS SDK packages. This will take a while"
   $podman_build -t godot-xcode-packer:${img_version} -f Dockerfile.xcode -v ${files_root}:/root/files . 2>&1 | tee logs/xcode.log
   $podman run -it --rm -v ${files_root}:/root/files godot-xcode-packer:${img_version} 2>&1 | tee logs/xcode_packer.log
 fi
 
 $podman_build_mono -t godot-osx:${img_version} -f Dockerfile.osx . 2>&1 | tee logs/osx.log
 $podman_build_mono -t godot-ios:${img_version} -f Dockerfile.ios . 2>&1 | tee logs/ios.log
+$podman_build_mono -t godot-tvos:${img_version} -f Dockerfile.tvos . 2>&1 | tee logs/tvos.log
 
 if [ ! -e files/msvc2017.tar ]; then
   echo
