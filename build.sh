@@ -20,7 +20,7 @@ fi
 if [ -z "$1" -o -z "$2" ]; then
   echo "Usage: $0 <godot branch> <mono version> [<mono branch> <mono commit hash>]"
   echo
-  echo "Examples: $0 3.1 mono-5.18.1.3"
+  echo "Examples: $0 3.2 mono-6.12.0.114"
   echo "	$0 master mono-6.6.0.160 2019-08 bef1e6335812d32f8eab648c0228fc624b9f8357"
   echo
   echo "godot branch:"
@@ -104,6 +104,7 @@ if [ ! -e ${mono_root} ]; then
   popd
 fi
 
+# You can add --no-cache  as an option to podman_build below to rebuild all containers from scratch
 export podman_build="$podman build --build-arg img_version=${img_version}"
 export podman_build_mono="$podman_build --build-arg mono_version=${mono_version} -v ${files_root}:/root/files"
 
