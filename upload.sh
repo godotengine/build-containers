@@ -22,6 +22,7 @@ $podman push godot-javascript:latest ${registry}/godot/javascript
 $podman push godot-xcode-packer:latest ${registry}/godot/xcode-packer
 
 $podman push godot-android:latest ${registry}/godot-private/android
+$podman push godot-tvos:latest ${registry}/godot-private/tvos
 $podman push godot-ios:latest ${registry}/godot-private/ios
 $podman push godot-osx:latest ${registry}/godot-private/macosx
 $podman push godot-msvc:latest ${registry}/godot-private/uwp

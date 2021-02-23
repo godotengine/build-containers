@@ -15,6 +15,7 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     clang -O3 -llzma -lxar -I /usr/local/include pbzx.c -o pbzx
 
 CMD mkdir -p /root/xcode && \
+    # macOS
     cd /root/xcode && \
     xar -xf /root/files/Xcode_12.2.xip && \
     /root/pbzx/pbzx -n Content | cpio -i && \
@@ -29,19 +30,39 @@ CMD mkdir -p /root/xcode && \
     cd /tmp && \
     tar -cJf /root/files/${OSX_SDK}.tar.xz ${OSX_SDK} && \
     rm -rf ${OSX_SDK} && \
+    # iOS
     cd /root/xcode && \
     export IOS_SDK=iPhoneOS14.2.sdk && \
-    export IOS_SIMULATOR_SDK=iPhoneSimulator14.2.sdk && \
     cp -r Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk /tmp/${IOS_SDK} && \
     mkdir -p /tmp/${IOS_SDK}/usr/include/c++ && \
     cp -r Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 /tmp/${IOS_SDK}/usr/include/c++/ && \
     cd /tmp && \
     tar -cJf /root/files/${IOS_SDK}.tar.xz ${IOS_SDK} && \
     rm -rf ${IOS_SDK} && \
+    # iOS Simulator
     cd /root/xcode && \
+    export IOS_SIMULATOR_SDK=iPhoneSimulator14.2.sdk && \
     cp -r Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk /tmp/${IOS_SDK} && \
     mkdir -p /tmp/${IOS_SDK}/usr/include/c++ && \
     cp -r Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 /tmp/${IOS_SDK}/usr/include/c++/ && \
     cd /tmp && \
     tar -cJf /root/files/${IOS_SIMULATOR_SDK}.tar.xz ${IOS_SDK} && \
-    rm -rf ${IOS_SDK}
+    rm -rf ${IOS_SDK} && \
+    # tvOS
+    cd /root/xcode && \
+    export TVOS_SDK=AppleTVOS14.2.sdk && \
+    cp -r Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk /tmp/${TVOS_SDK} && \
+    mkdir -p /tmp/${TVOS_SDK}/usr/include/c++ && \
+    cp -r Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 /tmp/${TVOS_SDK}/usr/include/c++/ && \
+    cd /tmp && \
+    tar -cJf /root/files/${TVOS_SDK}.tar.xz ${TVOS_SDK} && \
+    rm -rf ${TVOS_SDK} && \
+    # tvOS Simulator
+    cd /root/xcode && \
+    export TVOS_SIMULATOR_SDK=AppleTVSimulator14.2.sdk && \
+    cp -r Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator.sdk /tmp/${TVOS_SIMULATOR_SDK} && \
+    mkdir -p /tmp/${TVOS_SIMULATOR_SDK}/usr/include/c++ && \
+    cp -r Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 /tmp/${TVOS_SIMULATOR_SDK}/usr/include/c++/ && \
+    cd /tmp && \
+    tar -cJf /root/files/${TVOS_SIMULATOR_SDK}.tar.xz ${TVOS_SIMULATOR_SDK} && \
+    rm -rf ${TVOS_SIMULATOR_SDK}

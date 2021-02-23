@@ -1,0 +1,39 @@
+ARG img_version
+FROM godot-osx:${img_version}
+
+ARG mono_version
+
+ENV TVOS_SDK=14.2
+
+RUN dnf -y install --setopt=install_weak_deps=False \
+      automake autoconf clang gcc gcc-c++ gcc-objc gcc-objc++ cmake libicu-devel libtool libxml2-devel llvm-devel openssl-devel perl python yasm
+
+RUN git clone --progress https://github.com/tpoechtrager/cctools-port.git && \
+    cd /root/cctools-port && \
+    git checkout 634a084377ee2e2932c66459b0396edf76da2e9f && \
+    yes | cp -rf /root/files/tvos_toolchain/tvos_example.sh usage_examples/ios_toolchain/build.sh && \
+    yes | cp -rf /root/files/tvos_toolchain/tvos_wrapper.c usage_examples/ios_toolchain/wrapper.c && \
+    chmod +x usage_examples/ios_toolchain/build.sh
+
+RUN cd /root/cctools-port && \
+    usage_examples/ios_toolchain/build.sh /root/files/AppleTVOS${TVOS_SDK}.sdk.tar.xz arm64 && \
+    mkdir -p /root/ioscross/arm64 && \
+    mv usage_examples/ios_toolchain/target/* /root/ioscross/arm64 && \
+    mkdir /root/ioscross/arm64/usr && \
+    ln -s /root/ioscross/arm64/bin /root/ioscross/arm64/usr/bin
+
+RUN cd /root/cctools-port && \
+    sed -i 's#AppleTVOS#AppleTVSimulator#' usage_examples/ios_toolchain/build.sh && \
+    sed -i 's#-mappletvos-version-min=#-mappletvsimulator-version-min=#' usage_examples/ios_toolchain/wrapper.c && \
+    sed -i 's#^TRIPLE=.*#TRIPLE="x86_64-apple-darwin11"#' usage_examples/ios_toolchain/build.sh && \
+    usage_examples/ios_toolchain/build.sh /root/files/AppleTVSimulator${TVOS_SDK}.sdk.tar.xz x86_64 && \
+    mkdir -p /root/ioscross/x86_64 && \
+    mv usage_examples/ios_toolchain/target/* /root/ioscross/x86_64 && \
+    mkdir /root/ioscross/x86_64/usr && \
+    ln -s /root/ioscross/x86_64/bin /root/ioscross/x86_64/usr/bin
+
+ENV OSXCROSS_TVOS=not_nothing
+ENV TVOSCROSS_ROOT=/root/ioscross
+ENV PATH="/root/ioscross/arm64/bin:/root/ioscross/x86_64/bin:${PATH}"
+
+CMD /bin/bash
