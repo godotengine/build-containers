@@ -63,6 +63,15 @@ you can comment out the corresponding lines from the script:
 
 ## Host OS preparation
 
+Before doing anything, make sure to disable Security-Enhanced Linux (SELinux) on
+hosts that have it enabled to prevent permission errors:
+
+    sudo setenforce 0
+
+Some build steps require enough of RAM to be available on your OS, so make sure
+you have a swap file/partition properly configured if your machine is low on RAM
+(aim for at least 8 GB swap size if you have 8 GB of RAM).
+
 ### Podman Fedora image
 
 To be extra-sure that you are building with the same base container image as the official
