@@ -3,13 +3,13 @@ FROM godot-osx:${img_version}
 
 ARG mono_version
 
-ENV IOS_SDK=14.2
+ENV IOS_SDK=14.4
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       automake autoconf clang gcc gcc-c++ gcc-objc gcc-objc++ cmake libicu-devel libtool libxml2-devel llvm-devel openssl-devel perl python yasm && \
     git clone --progress https://github.com/tpoechtrager/cctools-port.git && \
     cd /root/cctools-port && \
-    git checkout 634a084377ee2e2932c66459b0396edf76da2e9f && \
+    git checkout 14ab64360c556c1263e022318ee4be1077d7a839 && \
     usage_examples/ios_toolchain/build.sh /root/files/iPhoneOS${IOS_SDK}.sdk.tar.xz arm64 && \
     mkdir -p /root/ioscross/arm64 && \
     mv usage_examples/ios_toolchain/target/* /root/ioscross/arm64 && \
