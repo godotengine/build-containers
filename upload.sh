@@ -7,21 +7,27 @@ if ! which $podman; then
   podman=docker
 fi
 
-registry=$1
+img_version=$1
+registry=$2
+
+if [ -z "${img_version}" ]; then
+  echo "No image version was provided, aborting. Check script for usage."
+  exit 1
+fi
 
 if [ -z "${registry}" ]; then
   registry=registry.prehensile-tales.com
 fi
 
-$podman push godot-export:latest ${registry}/godot/export
-$podman push godot-mono-glue:latest ${registry}/godot/mono-glue
-$podman push godot-windows:latest ${registry}/godot/windows
-$podman push godot-ubuntu-32:latest ${registry}/godot/ubuntu-32
-$podman push godot-ubuntu-64:latest ${registry}/godot/ubuntu-64
-$podman push godot-javascript:latest ${registry}/godot/javascript
-$podman push godot-xcode-packer:latest ${registry}/godot/xcode-packer
+$podman push godot-export:${img_version} ${registry}/godot/export
+$podman push godot-mono-glue:${img_version} ${registry}/godot/mono-glue
+$podman push godot-windows:${img_version} ${registry}/godot/windows
+$podman push godot-ubuntu-32:${img_version} ${registry}/godot/ubuntu-32
+$podman push godot-ubuntu-64:${img_version} ${registry}/godot/ubuntu-64
+$podman push godot-javascript:${img_version} ${registry}/godot/javascript
+$podman push godot-xcode-packer:${img_version} ${registry}/godot/xcode-packer
 
-$podman push godot-android:latest ${registry}/godot-private/android
-$podman push godot-ios:latest ${registry}/godot-private/ios
-$podman push godot-osx:latest ${registry}/godot-private/macosx
-$podman push godot-msvc:latest ${registry}/godot-private/uwp
+$podman push godot-android:${img_version} ${registry}/godot-private/android
+$podman push godot-ios:${img_version} ${registry}/godot-private/ios
+$podman push godot-osx:${img_version} ${registry}/godot-private/macosx
+$podman push godot-msvc:${img_version} ${registry}/godot-private/uwp
