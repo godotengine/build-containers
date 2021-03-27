@@ -45,7 +45,7 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
 
 # Until we can build the cross-compiler, we include a pre-made build in the container.
 RUN mkdir -p /root/aot-compilers/iphone-arm64 && \
-    curl -LO https://github.com/godotengine/godot-mono-builds/releases/download/release-bda87f2/ios-cross-arm64.zip && \
+    curl -LO https://github.com/godotengine/godot-mono-builds/releases/download/release-df330ce/ios-cross-arm64.zip && \
     dnf -y install --setopt=install_weak_deps=False p7zip && \
     7za e ios-cross-arm64.zip ios-cross-arm64-release/bin/aarch64-apple-darwin-mono-sgen -o/root/aot-compilers/iphone-arm64 && \
     rm ios-cross-arm64.zip

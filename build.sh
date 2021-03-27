@@ -20,7 +20,7 @@ fi
 if [ -z "$1" -o -z "$2" ]; then
   echo "Usage: $0 <godot branch> <mono version> [<mono branch> <mono commit hash>]"
   echo
-  echo "Examples: $0 3.2 mono-6.12.0.114"
+  echo "Examples: $0 3.x mono-6.12.0.122"
   echo "	$0 master mono-6.6.0.160 2019-08 bef1e6335812d32f8eab648c0228fc624b9f8357"
   echo
   echo "godot branch:"
@@ -97,7 +97,7 @@ if [ ! -e ${mono_root} ]; then
   # Set up godot-mono-builds in tree
   git clone --progress https://github.com/godotengine/godot-mono-builds
   pushd godot-mono-builds
-  git checkout d462909236457cd212b17378c29ce336749e260d
+  git checkout df330ce0bec35836a33b97db27c1e72014571103
   export MONO_SOURCE_ROOT=${mono_root}
   python3 patch_mono.py
   popd
