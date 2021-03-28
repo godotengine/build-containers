@@ -20,7 +20,7 @@ fi
 if [ -z "$1" -o -z "$2" ]; then
   echo "Usage: $0 <godot branch> <mono version> [<mono branch> <mono commit hash>]"
   echo
-  echo "Examples: $0 3.2 mono-6.12.0.114"
+  echo "Examples: $0 3.x mono-6.12.0.122"
   echo "	$0 master mono-6.6.0.160 2019-08 bef1e6335812d32f8eab648c0228fc624b9f8357"
   echo
   echo "godot branch:"
@@ -97,7 +97,7 @@ if [ ! -e ${mono_root} ]; then
   # Set up godot-mono-builds in tree
   git clone --progress https://github.com/godotengine/godot-mono-builds
   pushd godot-mono-builds
-  git checkout d462909236457cd212b17378c29ce336749e260d
+  git checkout df330ce0bec35836a33b97db27c1e72014571103
   export MONO_SOURCE_ROOT=${mono_root}
   python3 patch_mono.py
   popd
@@ -120,9 +120,9 @@ $podman_build_mono -t godot-ubuntu-32:${img_version} -f Dockerfile.ubuntu-32 . 2
 $podman_build_mono -t godot-javascript:${img_version} -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
 $podman_build_mono -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
 
-XCODE_SDK=12.2
-OSX_SDK=11.0
-IOS_SDK=14.2
+XCODE_SDK=12.4
+OSX_SDK=11.1
+IOS_SDK=14.4
 if [ ! -e files/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e files/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e files/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ]; then
   if [ ! -e files/Xcode_${XCODE_SDK}.xip ]; then
     echo "files/Xcode_${XCODE_SDK}.xip is required. It can be downloaded from https://developer.apple.com/download/more/ with a valid apple ID."

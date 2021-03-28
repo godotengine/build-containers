@@ -29,10 +29,10 @@ RUN cp -a /root/files/${mono_version} /root && \
     cd /root && \
     rm -rf /root/${mono_version} && \
     cert-sync /etc/ssl/certs/ca-certificates.crt && \
-    wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild_16.6+xamarinxplat.2020.04.29.14.43-0xamarin5+ubuntu1604b1_all.deb && \
+    wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild_16.6+xamarinxplat.2021.01.15.16.11-0xamarin1+ubuntu1604b1_all.deb && \
+    wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild-sdkresolver_16.6+xamarinxplat.2021.01.15.16.11-0xamarin1+ubuntu1604b1_all.deb && \
     wget https://download.mono-project.com/repo/ubuntu/pool/main/c/core-setup/msbuild-libhostfxr_3.0.0.2019.04.16.02.13-0xamarin4+ubuntu1604b1_i386.deb && \
-    wget https://download.mono-project.com/repo/ubuntu/pool/main/m/msbuild/msbuild-sdkresolver_16.6+xamarinxplat.2020.04.29.14.43-0xamarin5+ubuntu1604b1_all.deb && \
-    wget https://download.mono-project.com/repo/ubuntu/pool/main/n/nuget/nuget_5.5.0.6382.bin-0xamarin1+ubuntu1604b1_all.deb && \
+    wget https://download.mono-project.com/repo/ubuntu/pool/main/n/nuget/nuget_5.6.0.6489.bin-0xamarin1+ubuntu1604b1_all.deb && \
     dpkg -i --force-all *.deb && \
     sed -i '/Depends.*mono/d' /var/lib/dpkg/status && \
     ln -s /usr/bin/mono /usr/bin/cli && \

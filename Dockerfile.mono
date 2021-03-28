@@ -17,8 +17,8 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     rm -rf /root/${mono_version} && \
     cert-sync /etc/pki/tls/certs/ca-bundle.crt && \
     rpm -ivh --nodeps \
-      https://download.mono-project.com/repo/centos8-stable/m/msbuild/msbuild-16.6+xamarinxplat.2020.04.29.14.43-0.xamarin.6.epel8.noarch.rpm \
-      https://download.mono-project.com/repo/centos8-stable/m/msbuild/msbuild-sdkresolver-16.6+xamarinxplat.2020.04.29.14.43-0.xamarin.6.epel8.noarch.rpm \
+      https://download.mono-project.com/repo/centos8-stable/m/msbuild/msbuild-16.6+xamarinxplat.2021.01.15.16.11-0.xamarin.2.epel8.noarch.rpm \
+      https://download.mono-project.com/repo/centos8-stable/m/msbuild/msbuild-sdkresolver-16.6+xamarinxplat.2021.01.15.16.11-0.xamarin.2.epel8.noarch.rpm \
       https://download.mono-project.com/repo/centos8-stable/m/msbuild-libhostfxr/msbuild-libhostfxr-3.0.0.2019.04.16.02.13-0.xamarin.4.epel8.x86_64.rpm \
       https://download.mono-project.com/repo/centos8-stable/n/nuget/nuget-5.6.0.6489.bin-0.xamarin.1.epel8.noarch.rpm
 

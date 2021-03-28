@@ -35,18 +35,18 @@ The 'build.sh' script included is used to build the containers themselves.
 
 Run the command using:
 
-    ./build.sh 3.2 mono-6.12.0.114
+    ./build.sh 3.x mono-6.12.0.122
 
 Note that this will also download that Mono branch (2020-02) from Mono repository.
-That branch corresponds to the given Mono version (6.12.0.114) as per
+That branch corresponds to the given Mono version (6.12.0.122) as per
 https://www.mono-project.com/docs/about-mono/versioning/#mono-source-versioning .
 
 More details can be found in the Godot https://github.com/godotengine/godot-mono-builds
 repository (but you don't need this repository, as in this case Mono is built
 inside the containers)
 
-The above will generate images using the tag '3.2-mono-6.12.0.114'. This is convenient
-since as of today, this branch can be used to compile every 3.2.x version or
+The above will generate images using the tag '3.x-mono-6.12.0.122'. This is convenient
+since as of today, this branch can be used to compile every 3.x version or
 your custom modifications.
 
 ### Selecting which images to build
@@ -138,4 +138,3 @@ These are the expected container image sizes, so you can plan your disk usage in
 
 In addition to this, generating containers will also require some host disk space (around 4.5GB)
 for the downloaded Mono sources and dependencies.
-
