@@ -8,9 +8,13 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
       automake autoconf bzip2-devel clang libicu-devel libtool libxml2-devel llvm-devel openssl-devel yasm && \
     git clone --progress https://github.com/tpoechtrager/osxcross.git && \
     cd /root/osxcross && \
-    git checkout 61925a29c404fc547ce9d51eb2ee4a09bd6533da && \
+    git checkout 447cf3b3ea4323d24648f5f7f775f5977a0d15bd && \
     ln -s /root/files/MacOSX11.1.sdk.tar.xz /root/osxcross/tarballs && \
-    UNATTENDED=1 ./build.sh
+    UNATTENDED=1 ./build.sh && \
+    ./build_compiler_rt.sh && \
+    mkdir -p /usr/lib64/clang/12.0.0/{include,lib/darwin} && \
+    cp -rv /root/osxcross/build/compiler-rt/compiler-rt/include/sanitizer /usr/lib64/clang/12.0.0/include && \
+    cp -v /root/osxcross/build/compiler-rt/compiler-rt/build/lib/darwin/*.{a,dylib} /usr/lib64/clang/12.0.0/lib/darwin
 
 ENV OSXCROSS_ROOT=/root/osxcross
 ENV PATH="/root/osxcross/target/bin:${PATH}"
@@ -31,7 +35,7 @@ RUN cp -a /root/files/${mono_version} /root && \
         _lt_dar_can_shared=yes \
         CC=o64-clang \
         CXX=o64-clang++ && \
-    make -j && \
+    make -j MACOS_VERSION_MIN=10.12 && \
     make install && \
     cd /root && \
     rm -rf /root/dependencies/mono/bin/mono{,-sgen} /root/dependencies/mono/lib/mono && \
@@ -40,6 +44,7 @@ RUN cp -a /root/files/${mono_version} /root && \
     ln -s /usr/lib/mono /root/dependencies/mono/lib/mono && \
     mkdir -p /root/dependencies/mono/etc && \
     cp -rvp /etc/mono /root/dependencies/mono/etc/ && \
+    cp /root/dependencies/mono/etc/mono/config{,.bak} && \
     cp /root/files/mono-config-macosx /root/dependencies/mono/etc/mono/config && \
     rm -rf /root/${mono_version}
 

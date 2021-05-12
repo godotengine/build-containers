@@ -1,0 +1,39 @@
+ARG img_version
+FROM godot-mono:${img_version}
+
+ARG mono_version
+
+ENV GODOT_SDK_X86_64=/root/x86_64-godot-linux-gnu_sdk-buildroot
+ENV GODOT_SDK_I686=/root/i686-godot-linux-gnu_sdk-buildroot
+ENV BASE_PATH=${PATH}
+
+RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
+    dnf -y install --setopt=install_weak_deps=False \
+      libxcrypt-compat yasm && \
+    curl -LO https://downloads.tuxfamily.org/godotengine/toolchains/linux/2021-02-11/x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2 && \
+    tar xf x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2 && \
+    rm -f x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2 && \
+    cd x86_64-godot-linux-gnu_sdk-buildroot && \
+    ./relocate-sdk.sh && \
+    rm -f bin/{aclocal*,auto*,libtool*,m4} && \
+    cd /root && \
+    curl -LO https://downloads.tuxfamily.org/godotengine/toolchains/linux/2021-02-11/i686-godot-linux-gnu_sdk-buildroot.tar.bz2 && \
+    tar xf i686-godot-linux-gnu_sdk-buildroot.tar.bz2 && \
+    rm -f i686-godot-linux-gnu_sdk-buildroot.tar.bz2 && \
+    cd i686-godot-linux-gnu_sdk-buildroot && \
+    ./relocate-sdk.sh && \
+    rm -f bin/{aclocal*,auto*,libtool*,m4} && \
+    cp -a /root/files/${mono_version} /root && \
+    export MONO_SOURCE_ROOT=/root/${mono_version} && \
+    cd /root/${mono_version}/godot-mono-builds && \
+    export PATH=${GODOT_SDK_X86_64}/bin:${BASE_PATH} && \
+    python3 linux.py configure -j --target=x86_64 && \
+    python3 linux.py make -j --target=x86_64 && \
+    python3 bcl.py make -j --product=desktop && \
+    export PATH=${GODOT_SDK_I686}/bin:${BASE_PATH} && \
+    python3 linux.py configure -j --target=x86 && \
+    python3 linux.py make -j --target=x86 && \
+    cd /root && \
+    rm -rf /root/${mono_version}
+
+CMD /bin/bash

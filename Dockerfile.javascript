@@ -3,7 +3,7 @@ FROM godot-mono:${img_version}
 
 ARG mono_version
 
-ENV EMSCRIPTEN_CLASSICAL=2.0.15
+ENV EMSCRIPTEN_CLASSICAL=2.0.25
 ENV EMSCRIPTEN_MONO=1.39.9
 
 RUN if [ -z "${mono_version}" ]; then printf "\n\nArgument mono_version is mandatory!\n\n"; exit 1; fi && \
