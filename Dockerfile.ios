@@ -15,7 +15,7 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     mv usage_examples/ios_toolchain/target/* /root/ioscross/arm64 && \
     mkdir /root/ioscross/arm64/usr && \
     ln -s /root/ioscross/arm64/bin /root/ioscross/arm64/usr/bin && \
-    sed -i 's/miphoneos-version-min/mios-simulator-version-min/g' usage_examples/wrapper.c && \
+    sed -i 's/miphoneos-version-min/mios-simulator-version-min/g' usage_examples/ios_toolchain/wrapper.c && \
     usage_examples/ios_toolchain/build.sh /root/files/iPhoneSimulator${IOS_SDK}.sdk.tar.xz arm64 && \
     mkdir -p /root/ioscross/arm64_sim && \
     mv usage_examples/ios_toolchain/target/* /root/ioscross/arm64_sim && \

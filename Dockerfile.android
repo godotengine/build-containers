@@ -23,8 +23,6 @@ RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version}/godot-mono-builds && \
     python3 android.py configure -j --target=all-runtime && \
     python3 android.py make -j --target=all-runtime && \
-    cd /root/${mono_version} && git clean -fdx && NOCONFIGURE=1 ./autogen.sh && \
-    cd /root/${mono_version}/godot-mono-builds && \
     python3 bcl.py make -j --product=android && \
     cd /root && \
     rm -rf /root/${mono_version}

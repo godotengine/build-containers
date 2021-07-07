@@ -3,8 +3,8 @@ FROM godot-mono:${img_version}
 
 ARG mono_version
 
-ENV GODOT_SDK_X86_64=/root/x86_64-godot-linux-gnu_sdk-buildroot
-ENV GODOT_SDK_I686=/root/i686-godot-linux-gnu_sdk-buildroot
+ENV GODOT_SDK_LINUX_X86_64=/root/x86_64-godot-linux-gnu_sdk-buildroot
+ENV GODOT_SDK_LINUX_X86=/root/i686-godot-linux-gnu_sdk-buildroot
 ENV BASE_PATH=${PATH}
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
@@ -26,13 +26,15 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     cp -a /root/files/${mono_version} /root && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
     cd /root/${mono_version}/godot-mono-builds && \
-    export PATH=${GODOT_SDK_X86_64}/bin:${BASE_PATH} && \
+    export PATH=${GODOT_SDK_LINUX_X86_64}/bin:${BASE_PATH} && \
     python3 linux.py configure -j --target=x86_64 && \
     python3 linux.py make -j --target=x86_64 && \
-    python3 bcl.py make -j --product=desktop && \
-    export PATH=${GODOT_SDK_I686}/bin:${BASE_PATH} && \
+    export PATH=${GODOT_SDK_LINUX_X86}/bin:${BASE_PATH} && \
     python3 linux.py configure -j --target=x86 && \
     python3 linux.py make -j --target=x86 && \
+    export PATH=${GODOT_SDK_LINUX_X86_64}/bin:${BASE_PATH} && \
+    python3 bcl.py make -j --product=desktop && \
+    python3 linux.py copy-bcl --target=x86_64 --target=x86 && \
     cd /root && \
     rm -rf /root/${mono_version}
 

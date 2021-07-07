@@ -21,31 +21,15 @@ ENV PATH="/root/osxcross/target/bin:${PATH}"
 
 RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
-    export CMAKE=/root/osxcross/target/bin/x86_64-apple-darwin20.2-cmake && \
-    NOCONFIGURE=1 ./autogen.sh && \
-    ./configure --prefix=/root/dependencies/mono \
-        --build=x86_64-linux-gnu \
-        --host=x86_64-apple-darwin20.2 \
-        --disable-boehm \
-        --disable-mcs-build \
-        --with-tls=pthread \
-        --disable-dtrace \
-        --disable-executables \
-        mono_cv_uscore=yes \
-        _lt_dar_can_shared=yes \
-        CC=o64-clang \
-        CXX=o64-clang++ && \
-    make -j MACOS_VERSION_MIN=10.12 && \
-    make install && \
+    patch -p1 < /root/files/patches/mono-btls-cmake-wrapper.patch && \
+    export MONO_SOURCE_ROOT=/root/${mono_version} && \
+    export OSXCROSS_SDK=20.2 && \
+    cd /root/${mono_version}/godot-mono-builds && \
+    python3 osx.py configure -j --target=x86_64 --target=arm64 && \
+    python3 osx.py make -j --target=x86_64 --target=arm64 && \
+    python3 bcl.py make --product=desktop && \
+    python3 osx.py copy-bcl --target=x86_64 --target=arm64 && \
     cd /root && \
-    rm -rf /root/dependencies/mono/bin/mono{,-sgen} /root/dependencies/mono/lib/mono && \
-    ln -s /usr/bin/mono /root/dependencies/mono/bin/mono && \
-    ln -s /usr/bin/mono-sgen /root/dependencies/mono/bin/mono-sgen && \
-    ln -s /usr/lib/mono /root/dependencies/mono/lib/mono && \
-    mkdir -p /root/dependencies/mono/etc && \
-    cp -rvp /etc/mono /root/dependencies/mono/etc/ && \
-    cp /root/dependencies/mono/etc/mono/config{,.bak} && \
-    cp /root/files/mono-config-macosx /root/dependencies/mono/etc/mono/config && \
     rm -rf /root/${mono_version}
 
 CMD /bin/bash
