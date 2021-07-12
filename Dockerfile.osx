@@ -10,7 +10,9 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     cd /root/osxcross && \
     git checkout 447cf3b3ea4323d24648f5f7f775f5977a0d15bd && \
     ln -s /root/files/MacOSX11.1.sdk.tar.xz /root/osxcross/tarballs && \
-    UNATTENDED=1 ./build.sh
+    patch -p1 < /root/files/patches/osxcross-pr284-compiler-rt.patch && \
+    UNATTENDED=1 ./build.sh && \
+    ENABLE_COMPILER_RT_INSTALL=1 ./build_compiler_rt.sh
 
 ENV OSXCROSS_ROOT=/root/osxcross
 ENV PATH="/root/osxcross/target/bin:${PATH}"
