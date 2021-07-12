@@ -5,8 +5,7 @@ ARG mono_version
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
     dnf -y install --setopt=install_weak_deps=False \
-      gcc gcc-c++ make yasm \
-      autoconf automake cmake gettext libtool perl && \
+      autoconf automake cmake gcc gcc-c++ gettext libtool perl python-unversioned-command && \
     cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
     NOCONFIGURE=1 ./autogen.sh && \
