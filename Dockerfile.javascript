@@ -3,7 +3,7 @@ FROM godot-mono:${img_version}
 
 ARG mono_version
 
-ENV EMSCRIPTEN_CLASSICAL=2.0.15
+ENV EMSCRIPTEN_CLASSICAL=2.0.25
 ENV EMSCRIPTEN_MONO=1.39.9
 
 RUN if [ -z "${mono_version}" ]; then printf "\n\nArgument mono_version is mandatory!\n\n"; exit 1; fi && \
@@ -23,8 +23,6 @@ RUN if [ -z "${mono_version}" ]; then printf "\n\nArgument mono_version is manda
     python3 patch_emscripten.py && \
     python3 wasm.py configure -j --target=runtime && \
     python3 wasm.py make -j --target=runtime && \
-    cd /root/${mono_version} && git clean -fdx && NOCONFIGURE=1 ./autogen.sh && \
-    cd /root/${mono_version}/godot-mono-builds && \
     python3 bcl.py make -j --product wasm && \
     cd /root && \
     rm -rf /root/${mono_version}

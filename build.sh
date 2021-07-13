@@ -20,7 +20,7 @@ fi
 if [ -z "$1" -o -z "$2" ]; then
   echo "Usage: $0 <godot branch> <mono version> [<mono branch> <mono commit hash>]"
   echo
-  echo "Examples: $0 3.x mono-6.12.0.122"
+  echo "Examples: $0 3.x mono-6.12.0.147"
   echo "	$0 master mono-6.6.0.160 2019-08 bef1e6335812d32f8eab648c0228fc624b9f8357"
   echo
   echo "godot branch:"
@@ -97,7 +97,7 @@ if [ ! -e ${mono_root} ]; then
   # Set up godot-mono-builds in tree
   git clone --progress https://github.com/godotengine/godot-mono-builds
   pushd godot-mono-builds
-  git checkout df330ce0bec35836a33b97db27c1e72014571103
+  git checkout release/mono-6.12.0.147
   export MONO_SOURCE_ROOT=${mono_root}
   python3 patch_mono.py
   popd
@@ -113,10 +113,8 @@ $podman_build -t godot-export:${img_version} -f Dockerfile.export . 2>&1 | tee l
 
 $podman_build_mono -t godot-mono:${img_version} -f Dockerfile.mono . 2>&1 | tee logs/mono.log
 $podman_build_mono -t godot-mono-glue:${img_version} -f Dockerfile.mono-glue . 2>&1 | tee logs/mono-glue.log
-# The ulimit below is necessary to use Wine to workaround Mono cross-compilation bugs (see GH-32).
-$podman_build_mono -t godot-windows:${img_version} -f Dockerfile.windows --ulimit nofile=65536 . 2>&1 | tee logs/windows.log
-$podman_build_mono -t godot-ubuntu-64:${img_version} -f Dockerfile.ubuntu-64 . 2>&1 | tee logs/ubuntu-64.log
-$podman_build_mono -t godot-ubuntu-32:${img_version} -f Dockerfile.ubuntu-32 . 2>&1 | tee logs/ubuntu-32.log
+$podman_build_mono -t godot-linux:${img_version} -f Dockerfile.linux . 2>&1 | tee logs/linux.log
+$podman_build_mono -t godot-windows:${img_version} -f Dockerfile.windows . 2>&1 | tee logs/windows.log
 $podman_build_mono -t godot-javascript:${img_version} -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
 $podman_build_mono -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
 

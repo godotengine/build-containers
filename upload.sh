@@ -21,9 +21,8 @@ fi
 
 $podman push godot-export:${img_version} ${registry}/godot/export
 $podman push godot-mono-glue:${img_version} ${registry}/godot/mono-glue
+$podman push godot-linux:${img_version} ${registry}/godot/linux
 $podman push godot-windows:${img_version} ${registry}/godot/windows
-$podman push godot-ubuntu-32:${img_version} ${registry}/godot/ubuntu-32
-$podman push godot-ubuntu-64:${img_version} ${registry}/godot/ubuntu-64
 $podman push godot-javascript:${img_version} ${registry}/godot/javascript
 $podman push godot-xcode-packer:${img_version} ${registry}/godot/xcode-packer
 

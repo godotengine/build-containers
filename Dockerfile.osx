@@ -8,39 +8,26 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
       automake autoconf bzip2-devel clang libicu-devel libtool libxml2-devel llvm-devel openssl-devel yasm && \
     git clone --progress https://github.com/tpoechtrager/osxcross.git && \
     cd /root/osxcross && \
-    git checkout 61925a29c404fc547ce9d51eb2ee4a09bd6533da && \
+    git checkout 447cf3b3ea4323d24648f5f7f775f5977a0d15bd && \
     ln -s /root/files/MacOSX11.1.sdk.tar.xz /root/osxcross/tarballs && \
-    UNATTENDED=1 ./build.sh
+    patch -p1 < /root/files/patches/osxcross-pr284-compiler-rt.patch && \
+    UNATTENDED=1 ./build.sh && \
+    ENABLE_COMPILER_RT_INSTALL=1 ./build_compiler_rt.sh
 
 ENV OSXCROSS_ROOT=/root/osxcross
 ENV PATH="/root/osxcross/target/bin:${PATH}"
 
 RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
-    export CMAKE=/root/osxcross/target/bin/x86_64-apple-darwin20.2-cmake && \
-    NOCONFIGURE=1 ./autogen.sh && \
-    ./configure --prefix=/root/dependencies/mono \
-        --build=x86_64-linux-gnu \
-        --host=x86_64-apple-darwin20.2 \
-        --disable-boehm \
-        --disable-mcs-build \
-        --with-tls=pthread \
-        --disable-dtrace \
-        --disable-executables \
-        mono_cv_uscore=yes \
-        _lt_dar_can_shared=yes \
-        CC=o64-clang \
-        CXX=o64-clang++ && \
-    make -j && \
-    make install && \
+    patch -p1 < /root/files/patches/mono-btls-cmake-wrapper.patch && \
+    export MONO_SOURCE_ROOT=/root/${mono_version} && \
+    export OSXCROSS_SDK=20.2 && \
+    cd /root/${mono_version}/godot-mono-builds && \
+    python3 osx.py configure -j --target=x86_64 --target=arm64 && \
+    python3 osx.py make -j --target=x86_64 --target=arm64 && \
+    python3 bcl.py make --product=desktop && \
+    python3 osx.py copy-bcl --target=x86_64 --target=arm64 && \
     cd /root && \
-    rm -rf /root/dependencies/mono/bin/mono{,-sgen} /root/dependencies/mono/lib/mono && \
-    ln -s /usr/bin/mono /root/dependencies/mono/bin/mono && \
-    ln -s /usr/bin/mono-sgen /root/dependencies/mono/bin/mono-sgen && \
-    ln -s /usr/lib/mono /root/dependencies/mono/lib/mono && \
-    mkdir -p /root/dependencies/mono/etc && \
-    cp -rvp /etc/mono /root/dependencies/mono/etc/ && \
-    cp /root/files/mono-config-macosx /root/dependencies/mono/etc/mono/config && \
     rm -rf /root/${mono_version}
 
 CMD /bin/bash
