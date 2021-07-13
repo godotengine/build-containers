@@ -35,17 +35,17 @@ The 'build.sh' script included is used to build the containers themselves.
 
 Run the command using:
 
-    ./build.sh 3.x mono-6.12.0.122
+    ./build.sh 3.x mono-6.12.0.147
 
 Note that this will also download that Mono branch (2020-02) from Mono repository.
-That branch corresponds to the given Mono version (6.12.0.122) as per
+That branch corresponds to the given Mono version (6.12.0.147) as per
 https://www.mono-project.com/docs/about-mono/versioning/#mono-source-versioning .
 
 More details can be found in the Godot https://github.com/godotengine/godot-mono-builds
 repository (but you don't need this repository, as in this case Mono is built
 inside the containers)
 
-The above will generate images using the tag '3.x-mono-6.12.0.122'. This is convenient
+The above will generate images using the tag '3.x-mono-6.12.0.147'. This is convenient
 since as of today, this branch can be used to compile every 3.x version or
 your custom modifications.
 
@@ -122,18 +122,17 @@ This `binfmt` configuration **is not persistent**, you need to do it after a reb
 These are the expected container image sizes, so you can plan your disk usage in advance:
 
     REPOSITORY                                       TAG                    SIZE
-    localhost/godot-fedora                           3.2-mono-6.12.0.114    692 MB
-    localhost/godot-export                           3.2-mono-6.12.0.114    1.09 GB
-    localhost/godot-mono                             3.2-mono-6.12.0.114    1.51 GB
-    localhost/godot-mono-glue                        3.2-mono-6.12.0.114    1.73 GB
-    localhost/godot-msvc                             3.2-mono-6.12.0.114    11.5 GB
-    localhost/godot-windows                          3.2-mono-6.12.0.114    4.42 GB
-    localhost/godot-ubuntu-64                        3.2-mono-6.12.0.114    1.08 GB
-    localhost/godot-ubuntu-32                        3.2-mono-6.12.0.114    1 GB
-    localhost/godot-javascript                       3.2-mono-6.12.0.114    4.72 GB
-    localhost/godot-android                          3.2-mono-6.12.0.114    19.7 GB
-    localhost/godot-osx                              3.2-mono-6.12.0.114    2.84 GB
-    localhost/godot-ios                              3.2-mono-6.12.0.114    4.53 GB
+    localhost/godot-fedora                           3.x-mono-6.12.0.147  642 MB
+    localhost/godot-export                           3.x-mono-6.12.0.147  1.11 GB
+    localhost/godot-mono                             3.x-mono-6.12.0.147  1.54 GB
+    localhost/godot-mono-glue                        3.x-mono-6.12.0.147  1.78 GB
+    localhost/godot-linux                            3.x-mono-6.12.0.147  3.56 GB
+    localhost/godot-windows                          3.x-mono-6.12.0.147  3.46 GB
+    localhost/godot-javascript                       3.x-mono-6.12.0.147  3.8 GB
+    localhost/godot-android                          3.x-mono-6.12.0.147  19.6 GB
+    localhost/godot-osx                              3.x-mono-6.12.0.147  5.85 GB
+    localhost/godot-ios                              3.x-mono-6.12.0.147  7.08 GB
+    localhost/godot-msvc                             3.x-mono-6.12.0.147  11.2 GB
 
-In addition to this, generating containers will also require some host disk space (around 4.5GB)
-for the downloaded Mono sources and dependencies.
+In addition to this, generating containers will also require some host disk space
+(up to 30 GB) for the downloaded Mono sources and dependencies (Xcode, MSVC).
