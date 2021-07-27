@@ -11,8 +11,10 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     cd /root/${mono_version}/godot-mono-builds && \
     python3 windows.py configure -j --target=x86_64 --target=x86 --mxe-prefix=/usr && \
     python3 windows.py make -j --target=x86_64 --target=x86 --mxe-prefix=/usr && \
+    # 'desktop' bcl needed to build 'desktop-win32', then we can remove it.
     python3 bcl.py make -j --product=desktop && \
     python3 bcl.py make -j --product=desktop-win32 && \
+    rm -rf /root/mono-installs/desktop-bcl && \
     python3 windows.py copy-bcl --target=x86_64 --target=x86 && \
     cd /root && \
     rm -rf /root/${mono_version}
