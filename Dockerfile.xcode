@@ -1,5 +1,13 @@
 ARG img_version
-FROM godot-fedora:${img_version}
+#FROM godot-fedora:${img_version}
+FROM fedora:33
+
+WORKDIR /root
+
+RUN dnf -y upgrade --setopt=install_weak_deps=False && \
+    dnf -y install --setopt=install_weak_deps=False \
+      bash bzip2 curl file findutils git make nano patch pkgconfig python3-pip unzip which xz && \
+    pip install scons==4.1.0
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       autoconf automake libtool clang cmake fuse fuse-devel libxml2-devel libicu-devel compat-openssl10-devel bzip2-devel kmod cpio && \
