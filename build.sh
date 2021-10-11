@@ -91,6 +91,8 @@ if [ ! -e ${mono_root} ]; then
   pushd godot-mono-builds
   git checkout 0d72e71a50f2b76f10cd348a3bbb6ed81209b5e4
   export MONO_SOURCE_ROOT=${mono_root}
+  # Fix https://github.com/godotengine/build-containers/issues/95
+  git revert --no-commit f63f4e2e440197048646094b9d62a9f80eb88b0b
   python3 patch_mono.py
   popd
   popd
