@@ -22,7 +22,7 @@ documented here.
 
 ## Requirements
 
-These containers have been tested under Fedora 33 and Ubuntu 18.04 (others may work too).
+These containers have been tested under Fedora 34 and Ubuntu 18.04 (others may work too).
 
 The tool used to build and manage the containers is `podman`.
 
@@ -55,10 +55,12 @@ If you don't need to build all versions or you want to try with a single target 
 you can comment out the corresponding lines from the script:
 
     $podman_build_mono -t godot-linux:${img_version} -f Dockerfile.linux . 2>&1 | tee logs/linux.log
-    $podman_build_mono -t godot-windows:${img_version} -f Dockerfile.windows --ulimit nofile=65536 . 2>&1 | tee logs/windows.log
+    $podman_build_mono -t godot-windows:${img_version} -f Dockerfile.windows . 2>&1 | tee logs/windows.log
     $podman_build_mono -t godot-javascript:${img_version} -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
     $podman_build_mono -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
     ...
+
+Note: The MSVC image (used for UWP builds) does not work currently.
 
 ## Host OS preparation
 
@@ -67,17 +69,20 @@ you can comment out the corresponding lines from the script:
 To be extra-sure that you are building with the same base container image as the official
 builds, you can use:
 
-    podman pull registry.fedoraproject.org/fedora@sha256:acc80ce6652d35f55ad220aa1cfa3787cbaf19b0016b202f1ab29dc5060f5392
-    podman image tag registry.fedoraproject.org/fedora@27a979020952 fedora:32
+    podman pull registry.fedoraproject.org/fedora@sha256:sha256:8b01cffca564ca914d5d3c8dc8c6eca12a755ee4d1d898e22e83ad7128fae256
+    podman image tag registry.fedoraproject.org/fedora@abec9a7a7dc6 fedora:34
 
-### Fedora 33 Host
+### Fedora 34 Host
 
-Fedora 33 default configuration is able to build the containers. Ensure the tools
+Fedora 34 default configuration is able to build the containers. Ensure the tools
 are installed:
 
     sudo dnf -y install podman
 
 ### Ubuntu 18.04 Host
+
+Note: Using a Ubuntu 18.04 host is not recommended, we strongly recommend to use
+Fedora hosts to guarantee compatibility with what the official buildsystem uses.
 
 Install `podman` (as per https://podman.io/getting-started/installation). On
 Ubuntu 18.04, podman 2.2.1 was used successfully:
@@ -114,7 +119,7 @@ Install wine64, binfmt_misc, and configure it:
 
 This `binfmt` configuration **is not persistent**, you need to do it after a reboot in order to build the containers.
 
-(Note that this may break previous .exe binfmt support through `run-detectors`).
+(Note that this may break previous .exe binfmt support through `run-detectors`.)
 
 
 ## Appendix: Image sizes
@@ -132,7 +137,6 @@ These are the expected container image sizes, so you can plan your disk usage in
     localhost/godot-android                          3.x-mono-6.12.0.147  19.6 GB
     localhost/godot-osx                              3.x-mono-6.12.0.147  5.85 GB
     localhost/godot-ios                              3.x-mono-6.12.0.147  7.08 GB
-    localhost/godot-msvc                             3.x-mono-6.12.0.147  11.2 GB
 
 In addition to this, generating containers will also require some host disk space
 (up to 30 GB) for the downloaded Mono sources and dependencies (Xcode, MSVC).

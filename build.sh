@@ -8,15 +8,6 @@ if [ -z $podman ]; then
   exit 1
 fi
 
-if ! grep -rq '/usr/bin/wine' /proc/sys/fs/binfmt_misc; then
-  echo "binfmt_misc support for PE pointing to /usr/bin/wine must be enabled to build the Windows mono container."
-  echo "This can be done by:"
-  echo 'mount binfmt_misc -t binfmt_misc /proc/sys/fs/binfmt_misc'
-  echo 'echo ":windows:M::MZ::/usr/bin/wine:" > /proc/sys/fs/binfmt_misc/register'
-  echo 'echo ":windowsPE:M::PE::/usr/bin/wine:" > /proc/sys/fs/binfmt_misc/register'
-  exit 1
-fi
-
 if [ -z "$1" -o -z "$2" ]; then
   echo "Usage: $0 <godot branch> <mono version> [<mono branch> <mono commit hash>]"
   echo
@@ -43,6 +34,7 @@ img_version=$godot_branch-$mono_version
 files_root=$(pwd)/files
 mono_commit=
 mono_commit_str=
+build_msvc=0
 
 # If optional Mono git branch and commit hash were passed, use them.
 if [ ! -z "$3" -a ! -z "$4" ]; then
@@ -135,16 +127,18 @@ fi
 $podman_build_mono -t godot-osx:${img_version} -f Dockerfile.osx . 2>&1 | tee logs/osx.log
 $podman_build_mono -t godot-ios:${img_version} -f Dockerfile.ios . 2>&1 | tee logs/ios.log
 
-if [ ! -e files/msvc2017.tar ]; then
-  echo
-  echo "files/msvc2017.tar is missing. This file can be created on a Windows 7 or 10 machine by downloading the 'Visual Studio Tools' installer."
-  echo "here: https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017"
-  echo "The required components can be installed by running"
-  echo "vs_buildtools.exe --add Microsoft.VisualStudio.Workload.UniversalBuildTools --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.Windows10SDK.16299.Desktop --add Microsoft.VisualStudio.Component.Windows10SDK.16299.UWP.Native --passive"
-  echo "after that create a zipfile of C:/Program Files (x86)/Microsoft Visual Studio"
-  echo "tar -cf msvc2017.tar -C \"c:/Program Files (x86)/ Microsoft Visual Studio\""
-  echo
-  exit 1
-fi
+if [ "${build_msvc}" != "0" ]; then
+  if [ ! -e files/msvc2017.tar ]; then
+    echo
+    echo "files/msvc2017.tar is missing. This file can be created on a Windows 7 or 10 machine by downloading the 'Visual Studio Tools' installer."
+    echo "here: https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017"
+    echo "The required components can be installed by running"
+    echo "vs_buildtools.exe --add Microsoft.VisualStudio.Workload.UniversalBuildTools --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.Windows10SDK.16299.Desktop --add Microsoft.VisualStudio.Component.Windows10SDK.16299.UWP.Native --passive"
+    echo "after that create a zipfile of C:/Program Files (x86)/Microsoft Visual Studio"
+    echo "tar -cf msvc2017.tar -C \"c:/Program Files (x86)/ Microsoft Visual Studio\""
+    echo
+    exit 1
+  fi
 
-$podman_build -t godot-msvc:${img_version} -f Dockerfile.msvc -v ${files_root}:/root/files . 2>&1 | tee logs/msvc.log
+  $podman_build -t godot-msvc:${img_version} -f Dockerfile.msvc -v ${files_root}:/root/files . 2>&1 | tee logs/msvc.log
+fi
