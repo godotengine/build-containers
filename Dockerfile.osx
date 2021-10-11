@@ -8,10 +8,8 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
       automake autoconf bzip2-devel clang libicu-devel libtool libxml2-devel llvm-devel openssl-devel yasm && \
     git clone --progress https://github.com/tpoechtrager/osxcross.git && \
     cd /root/osxcross && \
-    git checkout de6c72eff2d6013f5af46fba1fa205654c5cf5e2 && \
+    git checkout 0f87f567dfaf98460244471ad6c0f4311d62079c && \
     ln -s /root/files/MacOSX11.1.sdk.tar.xz /root/osxcross/tarballs && \
-    curl -LO https://github.com/tpoechtrager/osxcross/pull/286.patch && \
-    patch -p1 < 286.patch && \
     UNATTENDED=1 ./build.sh && \
     ./build_compiler_rt.sh
 
