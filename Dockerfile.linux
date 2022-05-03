@@ -5,6 +5,7 @@ ARG mono_version
 
 ENV GODOT_SDK_LINUX_X86_64=/root/x86_64-godot-linux-gnu_sdk-buildroot
 ENV GODOT_SDK_LINUX_X86=/root/i686-godot-linux-gnu_sdk-buildroot
+ENV GODOT_SDK_LINUX_ARMHF=/root/arm-godot-linux-gnueabihf_sdk-buildroot
 ENV BASE_PATH=${PATH}
 
 RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
@@ -14,6 +15,13 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     tar xf x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2 && \
     rm -f x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2 && \
     cd x86_64-godot-linux-gnu_sdk-buildroot && \
+    ./relocate-sdk.sh && \
+    rm -f bin/{aclocal*,auto*,libtool*,m4} && \
+    cd /root && \
+    curl -LO https://downloads.tuxfamily.org/godotengine/toolchains/linux/2021-02-11/arm-godot-linux-gnueabihf_sdk-buildroot.tar.bz2 && \
+    tar xf arm-godot-linux-gnueabihf_sdk-buildroot.tar.bz2 && \
+    rm -f arm-godot-linux-gnueabihf_sdk-buildroot.tar.bz2 && \
+    cd arm-godot-linux-gnueabihf_sdk-buildroot && \
     ./relocate-sdk.sh && \
     rm -f bin/{aclocal*,auto*,libtool*,m4} && \
     cd /root && \
