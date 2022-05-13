@@ -8,54 +8,35 @@ if [ -z $podman ]; then
   exit 1
 fi
 
-if [ -z "$1" -o -z "$2" ]; then
-  echo "Usage: $0 <godot branch> <mono version> [<mono branch> <mono commit hash>]"
+if [ -z "$1" -o -z "$2" -o -z "$3" ]; then
+  echo "Usage: $0 <godot branch> <base distro> <mono version>"
   echo
-  echo "Examples: $0 3.x mono-6.12.0.147"
-  echo "	$0 master mono-6.6.0.160 2019-08 bef1e6335812d32f8eab648c0228fc624b9f8357"
+  echo "Example: $0 3.x f35 mono-6.12.0.178"
   echo
   echo "godot branch:"
+  echo "        Informational, tracks the Godot branch these containers are intended for."
+  echo
+  echo "base distro:"
+  echo "        Informational, tracks the base Linux distro these containers are based on."
+  echo
   echo "mono version:"
-  echo "	These are combined to form the docker image tag, e.g. 'master-mono-6.6.0.160'."
-  echo "	Git will then clone the branch/tag that matches the mono version."
+  echo "	Defines the Mono tag that will be cloned with Git to compile from source."
   echo
-  echo "mono branch:"
-  echo "	If specified, git will clone this mono branch/tag instead. Requires specifying a commit."
-  echo
-  echo "mono commit:"
-  echo "	If specified, git will check out this commit after cloning."
-  echo
+  echo "The resulting image version will be <godot branch>-<base distro>-<mono version>."
   exit 1
 fi
 
 godot_branch=$1
-mono_version=$2
-img_version=$godot_branch-$mono_version
+base_distro=$2
+mono_version=$3
+img_version=$godot_branch-$base_distro-$mono_version
 files_root=$(pwd)/files
-mono_commit=
-mono_commit_str=
+mono_root="${files_root}/${mono_version}"
 build_msvc=0
-
-# If optional Mono git branch and commit hash were passed, use them.
-if [ ! -z "$3" -a ! -z "$4" ]; then
-  mono_version=$3
-  mono_commit=$4
-  mono_commit_str="-${mono_commit:0:7}"
-fi
-
-# If mono branch does not start with mono-, prepend it to the folder name.
-if [ ${mono_version:0:5} != "mono-" ]; then
-  mono_root="${files_root}/mono-${mono_version}${mono_commit_str}"
-else
-  mono_root="${files_root}/${mono_version}${mono_commit_str}"
-fi
 
 # Confirm settings
 echo "Docker image tag: ${img_version}"
 echo "Mono branch: ${mono_version}"
-if [ ! -z "$mono_commit" ]; then
-  echo "Mono commit: ${mono_commit}"
-fi
 if [ -e ${mono_root} ]; then
   mono_exists="(exists)"
 fi
@@ -74,16 +55,8 @@ mkdir -p logs
 
 # Check out and patch Mono version
 if [ ! -e ${mono_root} ]; then
-  if [ ! -z "${mono_commit}" ]; then
-    # If a commit is specified, get the full history
-    git clone -b ${mono_version} --single-branch --progress https://github.com/mono/mono ${mono_root}
-    pushd ${mono_root}
-    git checkout ${mono_commit}
-  else
-    # Otherwise, get a shallow repo
-    git clone -b ${mono_version} --single-branch --progress --depth 1 https://github.com/mono/mono ${mono_root}
-    pushd ${mono_root}
-  fi
+  git clone -b ${mono_version} --single-branch --progress --depth 1 https://github.com/mono/mono ${mono_root}
+  pushd ${mono_root}
   # Download all submodules, up to 6 at a time
   git submodule update --init --recursive --recommend-shallow -j 6 --progress
   # Set up godot-mono-builds in tree
