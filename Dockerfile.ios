@@ -3,7 +3,7 @@ FROM godot-osx:${img_version}
 
 ARG mono_version
 
-ENV IOS_SDK=14.4
+ENV IOS_SDK=15.4
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       automake autoconf clang gcc gcc-c++ gcc-objc gcc-objc++ cmake libicu-devel libtool libxml2-devel llvm-devel openssl-devel perl python yasm && \

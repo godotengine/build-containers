@@ -9,7 +9,8 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     git clone --progress https://github.com/tpoechtrager/osxcross.git && \
     cd /root/osxcross && \
     git checkout 610542781e0eabc6968b0c0719bbc8d25c992025 && \
-    ln -s /root/files/MacOSX11.1.sdk.tar.xz /root/osxcross/tarballs && \
+    ln -s /root/files/MacOSX12.3.sdk.tar.xz /root/osxcross/tarballs && \
+    sed -i build.sh -e "/  12.1\*/a   12.3*)  TARGET=darwin21.4; X86_64H_SUPPORTED=1; I386_SUPPORTED=0; ARM_SUPPORTED=1; NEED_TAPI_SUPPORT=1; OSX_VERSION_MIN_INT=10.9;  ;;" && \
     sed -i build_compiler_rt.sh -e "s@BRANCH=main@BRANCH=release/14.x@g" && \
     UNATTENDED=1 ./build.sh && \
     ./build_compiler_rt.sh
@@ -21,7 +22,7 @@ RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
     patch -p1 < /root/files/patches/mono-btls-cmake-wrapper.patch && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
-    export OSXCROSS_SDK=20.2 && \
+    export OSXCROSS_SDK=21.4 && \
     cd /root/${mono_version}/godot-mono-builds && \
     python3 osx.py configure -j --target=x86_64 --target=arm64 && \
     python3 osx.py make -j --target=x86_64 --target=arm64 && \
