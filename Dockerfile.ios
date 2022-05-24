@@ -6,7 +6,7 @@ ARG mono_version
 ENV IOS_SDK=15.4
 
 RUN dnf -y install --setopt=install_weak_deps=False \
-      automake autoconf clang gcc gcc-c++ gcc-objc gcc-objc++ cmake libicu-devel libtool libxml2-devel llvm-devel openssl-devel perl python yasm && \
+      automake autoconf gcc gcc-c++ gcc-objc gcc-objc++ cmake libicu-devel libtool libxml2-devel openssl-devel perl python yasm && \
     git clone --progress https://github.com/tpoechtrager/cctools-port.git && \
     cd /root/cctools-port && \
     git checkout 04663295d0425abfac90a42440a7ec02d7155fea && \
@@ -31,7 +31,9 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     mkdir -p /root/ioscross/x86_64_sim && \
     mv usage_examples/ios_toolchain/target/* /root/ioscross/x86_64_sim && \
     mkdir /root/ioscross/x86_64_sim/usr && \
-    ln -s /root/ioscross/x86_64_sim/bin /root/ioscross/x86_64_sim/usr/bin
+    ln -s /root/ioscross/x86_64_sim/bin /root/ioscross/x86_64_sim/usr/bin && \
+    cd /root && \
+    rm -rf /root/cctools-port
 
 ENV OSXCROSS_IOS=not_nothing
 ENV IOSCROSS_ROOT=/root/ioscross
