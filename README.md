@@ -81,3 +81,20 @@ These are the expected container image sizes, so you can plan your disk usage in
 
 In addition to this, generating containers will also require some host disk space
 (up to 30 GB) for the downloaded Mono sources and dependencies (Xcode, MSVC).
+
+
+## Toolchains
+
+These are the toolchains currently in use for Godot 3.5 and later:
+
+- Base image: Fedora 36
+- Mono version: 6.12.0.182
+- SCons: 4.3.0
+- Linux: GCC 10.2.0 built against glibc 2.19, binutils 2.35.1, from our own [Linux SDK](https://github.com/godotengine/buildroot)
+- Windows: MinGW 9.0.0, GCC 11.2.0, binutils 2.37
+- HTML5: Emscripten 3.1.14 (standard builds), Emscripten 1.39.9 (Mono builds)
+- Android: Android NDK 23.2.8568313, build-tools 32.0.0, platform android-32, CMake 3.18.1
+- macOS: Xcode 13.3.1 with LLVM Clang 13.0.1, MacOSX SDK 12.3
+- iOS: Xcode 13.3.1 with LLVM Clang 13.0.1, iPhoneOS SDK 15.4
+- UWP: Visual Studio 2017, current configuration sadly not easily reproducible
+  (`Dockerfile.msvc` image is not compiled by default as it doesn't work)
