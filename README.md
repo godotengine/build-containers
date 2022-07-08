@@ -75,7 +75,7 @@ These are the expected container image sizes, so you can plan your disk usage in
     localhost/godot-linux                            3.x-f36-mono-6.12.0.182    3.8 GB
     localhost/godot-windows                          3.x-f36-mono-6.12.0.182    3.31 GB
     localhost/godot-javascript                       3.x-f36-mono-6.12.0.182    3.87 GB
-    localhost/godot-android                          3.x-f36-mono-6.12.0.182    16.8 GB
+    localhost/godot-android                          3.x-f36-mono-6.12.0.182    6.06 GB
     localhost/godot-osx                              3.x-f36-mono-6.12.0.182    5.71 GB
     localhost/godot-ios                              3.x-f36-mono-6.12.0.182    6.53 GB
 
