@@ -1,5 +1,5 @@
 ARG img_version
-FROM godot-osx:${img_version}
+FROM godot-macos:${img_version}
 
 ARG mono_version
 
