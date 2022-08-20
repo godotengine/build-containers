@@ -33,6 +33,9 @@ tried we ran into performance issues).
 
 ## Usage
 
+**Note:** Make sure the path containing the scripts doesn't have spaces 
+(e.g. /home/github repos/build-containers/) or else building will fail.
+
 The `build.sh` script included is used to build the containers themselves.
 
 The first two arguments can take any value and are meant to convey what Godot branch
