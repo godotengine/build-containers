@@ -54,7 +54,7 @@ you can comment out the corresponding lines from the script:
 
     $podman_build -t godot-linux:${img_version} -f Dockerfile.linux . 2>&1 | tee logs/linux.log
     $podman_build -t godot-windows:${img_version} -f Dockerfile.windows . 2>&1 | tee logs/windows.log
-    $podman_build -t godot-javascript:${img_version} -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
+    $podman_build -t godot-web:${img_version} -f Dockerfile.web . 2>&1 | tee logs/web.log
     $podman_build -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
     ...
 
@@ -70,7 +70,7 @@ These are the expected container image sizes, so you can plan your disk usage in
     localhost/godot-export                           4.x-f36                    1.54 GB
     localhost/godot-linux                            4.x-f36                    2.07 GB
     localhost/godot-windows                          4.x-f36                    1.81 GB
-    localhost/godot-javascript                       4.x-f36                    2.2 GB
+    localhost/godot-web                              4.x-f36                    2.2 GB
     localhost/godot-android                          4.x-f36                    4.24 GB
     localhost/godot-osx                              4.x-f36                    4.56 GB
     localhost/godot-ios                              4.x-f36                    5.01 GB

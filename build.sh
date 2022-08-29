@@ -51,7 +51,7 @@ $podman_build -t godot-export:${img_version} -f Dockerfile.export . 2>&1 | tee l
 
 $podman_build -t godot-linux:${img_version} -f Dockerfile.linux . 2>&1 | tee logs/linux.log
 $podman_build -t godot-windows:${img_version} -f Dockerfile.windows . 2>&1 | tee logs/windows.log
-$podman_build -t godot-javascript:${img_version} -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
+$podman_build -t godot-web:${img_version} -f Dockerfile.web . 2>&1 | tee logs/web.log
 $podman_build -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
 
 XCODE_SDK=13.3.1
