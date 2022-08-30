@@ -1,11 +1,8 @@
 ARG img_version
-FROM godot-mono:${img_version}
+FROM godot-fedora:${img_version}
 
-ARG mono_version
-
-RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
-    dnf -y install --setopt=install_weak_deps=False \
-      automake autoconf bzip2-devel cmake libicu-devel libtool libxml2-devel openssl-devel yasm && \
+RUN dnf -y install --setopt=install_weak_deps=False \
+      automake autoconf bzip2-devel cmake gcc gcc-c++ libicu-devel libtool libxml2-devel openssl-devel yasm && \
     git clone --progress https://github.com/tpoechtrager/osxcross.git && \
     cd /root/osxcross && \
     git checkout 17bb5e2d0a46533c1dd525cf4e9a80d88bd9f00e && \
@@ -19,18 +16,5 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
 
 ENV OSXCROSS_ROOT=/root/osxcross
 ENV PATH="/root/osxcross/target/bin:${PATH}"
-
-RUN cp -a /root/files/${mono_version} /root && \
-    cd /root/${mono_version} && \
-    patch -p1 < /root/files/patches/mono-btls-cmake-wrapper.patch && \
-    export MONO_SOURCE_ROOT=/root/${mono_version} && \
-    export OSXCROSS_SDK=21.4 && \
-    cd /root/${mono_version}/godot-mono-builds && \
-    python3 osx.py configure -j --target=x86_64 --target=arm64 && \
-    python3 osx.py make -j --target=x86_64 --target=arm64 && \
-    python3 bcl.py make --product=desktop && \
-    python3 osx.py copy-bcl --target=x86_64 --target=arm64 && \
-    cd /root && \
-    rm -rf /root/${mono_version}
 
 CMD /bin/bash

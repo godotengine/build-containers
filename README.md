@@ -35,29 +35,27 @@ tried we ran into performance issues).
 
 The `build.sh` script included is used to build the containers themselves.
 
-The first two arguments can take any value and are meant to convey what Godot branch
-you are building for (e.g. `3.x`) and what Linux distribution the `Dockerfile.base`
+The two arguments can take any value and are meant to convey what Godot branch
+you are building for (e.g. `4.x`) and what Linux distribution the `Dockerfile.base`
 is based on (e.g. `f36` for Fedora 36).
-
-The third argument is important and should be the name of a tagged Mono release from
-the upstream `2020-02` branch (e.g. `mono-6.12.0.182`).
 
 Run the command using:
 
-    ./build.sh 3.x f36 mono-6.12.0.182
+    ./build.sh 4.x f36
 
-The above will generate images using the tag '3.x-f36-mono-6.12.0.182'.
-You can then specify it in the `build.sh` of [godot-build-scripts]().
+The above will generate images using the tag '4.x-f36'.
+You can then specify it in the `build.sh` of
+[godot-build-scripts](https://github.com/godotengine/godot-build-scripts).
 
 ### Selecting which images to build
 
 If you don't need to build all versions or you want to try with a single target OS first,
 you can comment out the corresponding lines from the script:
 
-    $podman_build_mono -t godot-linux:${img_version} -f Dockerfile.linux . 2>&1 | tee logs/linux.log
-    $podman_build_mono -t godot-windows:${img_version} -f Dockerfile.windows . 2>&1 | tee logs/windows.log
-    $podman_build_mono -t godot-javascript:${img_version} -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
-    $podman_build_mono -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
+    $podman_build -t godot-linux:${img_version} -f Dockerfile.linux . 2>&1 | tee logs/linux.log
+    $podman_build -t godot-windows:${img_version} -f Dockerfile.windows . 2>&1 | tee logs/windows.log
+    $podman_build -t godot-web:${img_version} -f Dockerfile.web . 2>&1 | tee logs/web.log
+    $podman_build -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
     ...
 
 **Note:** The MSVC image (used for UWP builds) does not work currently.
@@ -68,31 +66,28 @@ you can comment out the corresponding lines from the script:
 These are the expected container image sizes, so you can plan your disk usage in advance:
 
     REPOSITORY                                       TAG                        SIZE
-    localhost/godot-fedora                           3.x-f36-mono-6.12.0.182    546 MB
-    localhost/godot-export                           3.x-f36-mono-6.12.0.182    1.03 GB
-    localhost/godot-mono                             3.x-f36-mono-6.12.0.182    1.41 GB
-    localhost/godot-mono-glue                        3.x-f36-mono-6.12.0.182    1.75 GB
-    localhost/godot-linux                            3.x-f36-mono-6.12.0.182    3.8 GB
-    localhost/godot-windows                          3.x-f36-mono-6.12.0.182    3.31 GB
-    localhost/godot-javascript                       3.x-f36-mono-6.12.0.182    3.87 GB
-    localhost/godot-android                          3.x-f36-mono-6.12.0.182    6.06 GB
-    localhost/godot-osx                              3.x-f36-mono-6.12.0.182    5.71 GB
-    localhost/godot-ios                              3.x-f36-mono-6.12.0.182    6.53 GB
+    localhost/godot-fedora                           4.x-f36                    1.06 GB
+    localhost/godot-export                           4.x-f36                    1.54 GB
+    localhost/godot-linux                            4.x-f36                    2.07 GB
+    localhost/godot-windows                          4.x-f36                    1.81 GB
+    localhost/godot-web                              4.x-f36                    2.2 GB
+    localhost/godot-android                          4.x-f36                    4.24 GB
+    localhost/godot-osx                              4.x-f36                    4.56 GB
+    localhost/godot-ios                              4.x-f36                    5.01 GB
 
 In addition to this, generating containers will also require some host disk space
-(up to 30 GB) for the downloaded Mono sources and dependencies (Xcode, MSVC).
+(around 20 GB) for the dependencies (Xcode, MSVC).
 
 
 ## Toolchains
 
-These are the toolchains currently in use for Godot 3.5 and later:
+These are the toolchains currently in use for Godot 4.0 and later:
 
 - Base image: Fedora 36
-- Mono version: 6.12.0.182
-- SCons: 4.3.0
+- SCons: 4.4.0
 - Linux: GCC 10.2.0 built against glibc 2.19, binutils 2.35.1, from our own [Linux SDK](https://github.com/godotengine/buildroot)
 - Windows: MinGW 9.0.0, GCC 11.2.0, binutils 2.37
-- HTML5: Emscripten 3.1.14 (standard builds), Emscripten 1.39.9 (Mono builds)
+- HTML5: Emscripten 3.1.20
 - Android: Android NDK 23.2.8568313, build-tools 32.0.0, platform android-32, CMake 3.18.1
 - macOS: Xcode 13.3.1 with LLVM Clang 13.0.1, MacOSX SDK 12.3
 - iOS: Xcode 13.3.1 with LLVM Clang 13.0.1, iPhoneOS SDK 15.4
