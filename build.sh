@@ -54,9 +54,9 @@ $podman_build -t godot-windows:${img_version} -f Dockerfile.windows . 2>&1 | tee
 $podman_build -t godot-web:${img_version} -f Dockerfile.web . 2>&1 | tee logs/web.log
 $podman_build -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
 
-XCODE_SDK=13.3.1
-OSX_SDK=12.3
-IOS_SDK=15.4
+XCODE_SDK=14.1
+OSX_SDK=13.0
+IOS_SDK=16.1
 if [ ! -e files/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e files/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e files/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ]; then
   if [ ! -e files/Xcode_${XCODE_SDK}.xip ]; then
     echo "files/Xcode_${XCODE_SDK}.xip is required. It can be downloaded from https://developer.apple.com/download/more/ with a valid apple ID."
