@@ -2,14 +2,15 @@ ARG img_version
 FROM godot-fedora:${img_version}
 
 RUN dnf -y install --setopt=install_weak_deps=False \
-      automake autoconf bzip2-devel cmake gcc gcc-c++ libicu-devel libtool libxml2-devel openssl-devel yasm && \
+      automake autoconf bzip2-devel cmake gcc gcc-c++ libicu-devel libtool libxml2-devel openssl-devel yasm \
+      clang llvm-devel && \
     git clone --progress https://github.com/tpoechtrager/osxcross.git && \
     cd /root/osxcross && \
-    git checkout 17bb5e2d0a46533c1dd525cf4e9a80d88bd9f00e && \
-    ln -s /root/files/MacOSX12.3.sdk.tar.xz /root/osxcross/tarballs && \
+    git checkout 50e86ebca7d14372febd0af8cd098705049161b9 && \
+    ln -s /root/files/MacOSX13.0.sdk.tar.xz /root/osxcross/tarballs && \
     export UNATTENDED=1 && \
-    # Custom build to ensure we have Clang version matching Xcode SDK.
-    CLANG_VERSION=13.0.1 ENABLE_CLANG_INSTALL=1 INSTALLPREFIX=/usr ./build_clang.sh && \
+    # Custom build Clang if the Fedora version doesn't match the Xcode SDK.
+    #CLANG_VERSION=14.0.6 ENABLE_CLANG_INSTALL=1 INSTALLPREFIX=/usr ./build_clang.sh && \
     ./build.sh && \
     ./build_compiler_rt.sh && \
     rm -rf /root/osxcross/build
