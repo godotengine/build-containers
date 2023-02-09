@@ -44,7 +44,7 @@ done
 mkdir -p logs
 
 # You can add --no-cache  as an option to podman_build below to rebuild all containers from scratch
-export podman_build="$podman build --build-arg img_version=${img_version} -v ${files_root}:/root/files"
+export podman_build="$podman build --build-arg img_version=${img_version} -v ${files_root}:/root/files:z"
 
 $podman build -t godot-fedora:${img_version} -f Dockerfile.base . 2>&1 | tee logs/base.log
 $podman_build -t godot-export:${img_version} -f Dockerfile.export . 2>&1 | tee logs/export.log
@@ -65,7 +65,7 @@ if [ ! -e files/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e files/iPhoneOS${IOS_SDK}
 
   echo "Building OSX and iOS SDK packages. This will take a while"
   $podman_build -t godot-xcode-packer:${img_version} -f Dockerfile.xcode . 2>&1 | tee logs/xcode.log
-  $podman run -it --rm -v ${files_root}:/root/files -e XCODE_SDKV="${XCODE_SDK}" -e OSX_SDKV="${OSX_SDK}" -e IOS_SDKV="${IOS_SDK}" godot-xcode-packer:${img_version} 2>&1 | tee logs/xcode_packer.log
+  $podman run -it --rm -v ${files_root}:/root/files:z -e XCODE_SDKV="${XCODE_SDK}" -e OSX_SDKV="${OSX_SDK}" -e IOS_SDKV="${IOS_SDK}" godot-xcode-packer:${img_version} 2>&1 | tee logs/xcode_packer.log
 fi
 
 $podman_build -t godot-osx:${img_version} -f Dockerfile.osx . 2>&1 | tee logs/osx.log
