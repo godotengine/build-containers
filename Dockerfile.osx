@@ -10,6 +10,7 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
     cd /root/osxcross && \
     git checkout 17bb5e2d0a46533c1dd525cf4e9a80d88bd9f00e && \
     ln -s /root/files/MacOSX12.3.sdk.tar.xz /root/osxcross/tarballs && \
+    patch -p1 < /root/files/patches/osxcross-pr367-fix-github-dl-page.diff && \
     export UNATTENDED=1 && \
     # Custom build to ensure we have Clang version matching Xcode SDK.
     CLANG_VERSION=13.0.1 ENABLE_CLANG_INSTALL=1 INSTALLPREFIX=/usr ./build_clang.sh && \
