@@ -50,18 +50,18 @@ podman_build() {
   "$podman" build \
     --build-arg img_version=${img_version} \
     -v "${files_root}":/root/files:z \
-    -t "$1:${img_version}" \
-    -f Dockerfile."$2" . \
-    2>&1 | tee logs/"$2".log
+    -t godot-"$1:${img_version}" \
+    -f Dockerfile."$1" . \
+    2>&1 | tee logs/"$1".log
 }
 
-podman_build godot-export export
+podman_build export
 
-podman_build godot-linux linux
-podman_build godot-windows windows
+podman_build linux
+podman_build windows
 
-podman_build godot-web web
-podman_build godot-android android
+podman_build web
+podman_build android
 
 XCODE_SDK=14.1
 OSX_SDK=13.0
@@ -73,12 +73,18 @@ if [ ! -e "${files_root}"/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}
   fi
 
   echo "Building OSX and iOS SDK packages. This will take a while"
-  podman_build godot-xcode-packer xcode
-  $podman run -it --rm -v "${files_root}":/root/files:z -e XCODE_SDKV="${XCODE_SDK}" -e OSX_SDKV="${OSX_SDK}" -e IOS_SDKV="${IOS_SDK}" godot-xcode-packer:${img_version} 2>&1 | tee logs/xcode_packer.log
+  podman_build xcode
+  $podman run -it --rm \
+    -v "${files_root}":/root/files:z \
+    -e XCODE_SDKV="${XCODE_SDK}" \
+    -e OSX_SDKV="${OSX_SDK}" \
+    -e IOS_SDKV="${IOS_SDK}" \
+    godot-xcode:${img_version} \
+    2>&1 | tee logs/xcode_packer.log
 fi
 
-podman_build godot-osx osx
-podman_build godot-ios ios
+podman_build osx
+podman_build ios
 
 if [ "${build_msvc}" != "0" ]; then
   if [ ! -e "${files_root}"/msvc2017.tar ]; then
@@ -93,5 +99,5 @@ if [ "${build_msvc}" != "0" ]; then
     exit 1
   fi
 
-  podman_build godot-msvc msvc
+  podman_build msvc
 fi

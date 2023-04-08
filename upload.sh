@@ -23,7 +23,7 @@ $podman push godot-export:${img_version} ${registry}/godot/export
 $podman push godot-linux:${img_version} ${registry}/godot/linux
 $podman push godot-windows:${img_version} ${registry}/godot/windows
 $podman push godot-web:${img_version} ${registry}/godot/web
-$podman push godot-xcode-packer:${img_version} ${registry}/godot/xcode-packer
+$podman push godot-xcode:${img_version} ${registry}/godot/xcode
 
 $podman push godot-android:${img_version} ${registry}/godot-private/android
 $podman push godot-ios:${img_version} ${registry}/godot-private/ios
