@@ -43,36 +43,45 @@ done
 
 mkdir -p logs
 
-# You can add --no-cache  as an option to podman_build below to rebuild all containers from scratch
-export podman_build="$podman build --build-arg img_version=${img_version} -v ${files_root}:/root/files:z"
+"$podman" build -t godot-fedora:${img_version} -f Dockerfile.base . 2>&1 | tee logs/base.log
 
-$podman build -t godot-fedora:${img_version} -f Dockerfile.base . 2>&1 | tee logs/base.log
-$podman_build -t godot-export:${img_version} -f Dockerfile.export . 2>&1 | tee logs/export.log
+podman_build() {
+  # You can add --no-cache as an option to podman_build below to rebuild all containers from scratch.
+  "$podman" build \
+    --build-arg img_version=${img_version} \
+    -v "${files_root}":/root/files:z \
+    -t "$1:${img_version}" \
+    -f Dockerfile."$2" . \
+    2>&1 | tee logs/"$2".log
+}
 
-$podman_build -t godot-linux:${img_version} -f Dockerfile.linux . 2>&1 | tee logs/linux.log
-$podman_build -t godot-windows:${img_version} -f Dockerfile.windows . 2>&1 | tee logs/windows.log
-$podman_build -t godot-web:${img_version} -f Dockerfile.web . 2>&1 | tee logs/web.log
-$podman_build -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
+podman_build godot-export export
+
+podman_build godot-linux linux
+podman_build godot-windows windows
+
+podman_build godot-web web
+podman_build godot-android android
 
 XCODE_SDK=14.1
 OSX_SDK=13.0
 IOS_SDK=16.1
-if [ ! -e ${files_root}/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e ${files_root}/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e ${files_root}/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ]; then
-  if [ ! -e ${files_root}/Xcode_${XCODE_SDK}.xip ]; then
+if [ ! -e "${files_root}"/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ]; then
+  if [ ! -e "${files_root}"/Xcode_${XCODE_SDK}.xip ]; then
     echo "files/Xcode_${XCODE_SDK}.xip is required. It can be downloaded from https://developer.apple.com/download/more/ with a valid apple ID."
     exit 1
   fi
 
   echo "Building OSX and iOS SDK packages. This will take a while"
-  $podman_build -t godot-xcode-packer:${img_version} -f Dockerfile.xcode . 2>&1 | tee logs/xcode.log
-  $podman run -it --rm -v ${files_root}:/root/files:z -e XCODE_SDKV="${XCODE_SDK}" -e OSX_SDKV="${OSX_SDK}" -e IOS_SDKV="${IOS_SDK}" godot-xcode-packer:${img_version} 2>&1 | tee logs/xcode_packer.log
+  podman_build godot-xcode-packer xcode
+  $podman run -it --rm -v "${files_root}":/root/files:z -e XCODE_SDKV="${XCODE_SDK}" -e OSX_SDKV="${OSX_SDK}" -e IOS_SDKV="${IOS_SDK}" godot-xcode-packer:${img_version} 2>&1 | tee logs/xcode_packer.log
 fi
 
-$podman_build -t godot-osx:${img_version} -f Dockerfile.osx . 2>&1 | tee logs/osx.log
-$podman_build -t godot-ios:${img_version} -f Dockerfile.ios . 2>&1 | tee logs/ios.log
+podman_build godot-osx osx
+podman_build godot-ios ios
 
 if [ "${build_msvc}" != "0" ]; then
-  if [ ! -e ${files_root}/msvc2017.tar ]; then
+  if [ ! -e "${files_root}"/msvc2017.tar ]; then
     echo
     echo "files/msvc2017.tar is missing. This file can be created on a Windows 7 or 10 machine by downloading the 'Visual Studio Tools' installer."
     echo "here: https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017"
@@ -84,5 +93,5 @@ if [ "${build_msvc}" != "0" ]; then
     exit 1
   fi
 
-  $podman_build -t godot-msvc:${img_version} -f Dockerfile.msvc . 2>&1 | tee logs/msvc.log
+  podman_build godot-msvc msvc
 fi
