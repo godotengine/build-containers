@@ -1,12 +1,6 @@
 #!/bin/bash
-set -e
 
-podman=`which podman || true`
-
-if [ -z $podman ]; then
-  echo "podman needs to be in PATH for this script to work."
-  exit 1
-fi
+source $(dirname "$0")/setup.sh
 
 if [ -z "$1" -o -z "$2" ]; then
   echo "Usage: $0 <godot branch> <base distro>"
@@ -74,7 +68,7 @@ if [ ! -e "${files_root}"/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}
 
   echo "Building OSX and iOS SDK packages. This will take a while"
   podman_build xcode
-  $podman run -it --rm \
+  "$podman" run -it --rm \
     -v "${files_root}":/root/files:z \
     -e XCODE_SDKV="${XCODE_SDK}" \
     -e OSX_SDKV="${OSX_SDK}" \
