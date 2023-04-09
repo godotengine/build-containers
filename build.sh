@@ -29,17 +29,19 @@ img_version=$godot_branch-$base_distro
 files_root="$(cd dirname "$0"; pwd)/files"
 build_msvc=0
 
-# Confirm settings
-echo "Docker image tag: ${img_version}"
-echo
-while true; do
-  read -p "Is this correct? [y/n] " yn
-  case $yn in
-    [Yy]* ) break;;
-    [Nn]* ) exit 1;;
-    * ) echo "Please answer yes or no.";;
-  esac
-done
+if [ ! -z "$PS1" ]; then
+  # Confirm settings
+  echo "Docker image tag: ${img_version}"
+  echo
+  while true; do
+    read -p "Is this correct? [y/n] " yn
+    case $yn in
+      [Yy]* ) break;;
+      [Nn]* ) exit 1;;
+      * ) echo "Please answer yes or no.";;
+    esac
+  done
+fi
 
 mkdir -p logs
 
