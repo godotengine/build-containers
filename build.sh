@@ -26,7 +26,7 @@ fi
 godot_branch=$1
 base_distro=$2
 img_version=$godot_branch-$base_distro
-files_root=$(pwd)/files
+files_root="$(cd dirname "$0"; pwd)/files"
 build_msvc=0
 
 # Confirm settings
@@ -57,8 +57,8 @@ $podman_build -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee
 XCODE_SDK=14.1
 OSX_SDK=13.0
 IOS_SDK=16.1
-if [ ! -e files/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e files/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e files/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ]; then
-  if [ ! -e files/Xcode_${XCODE_SDK}.xip ]; then
+if [ ! -e ${files_root}/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e ${files_root}/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e ${files_root}/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ]; then
+  if [ ! -e ${files_root}/Xcode_${XCODE_SDK}.xip ]; then
     echo "files/Xcode_${XCODE_SDK}.xip is required. It can be downloaded from https://developer.apple.com/download/more/ with a valid apple ID."
     exit 1
   fi
@@ -72,7 +72,7 @@ $podman_build -t godot-osx:${img_version} -f Dockerfile.osx . 2>&1 | tee logs/os
 $podman_build -t godot-ios:${img_version} -f Dockerfile.ios . 2>&1 | tee logs/ios.log
 
 if [ "${build_msvc}" != "0" ]; then
-  if [ ! -e files/msvc2017.tar ]; then
+  if [ ! -e ${files_root}/msvc2017.tar ]; then
     echo
     echo "files/msvc2017.tar is missing. This file can be created on a Windows 7 or 10 machine by downloading the 'Visual Studio Tools' installer."
     echo "here: https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017"
