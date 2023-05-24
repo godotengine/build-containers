@@ -1,6 +1,8 @@
 #!/bin/bash
 
-source $(dirname "$0")/setup.sh
+basedir=$(cd $(dirname "$0"); pwd)
+
+source $basedir/setup.sh
 
 if [ -z "$1" -o -z "$2" ]; then
   echo "Usage: $0 <godot branch> <base distro>"
@@ -20,7 +22,7 @@ fi
 godot_branch=$1
 base_distro=$2
 img_version=$godot_branch-$base_distro
-files_root="$(cd dirname "$0"; pwd)/files"
+files_root="$basedir/files"
 build_msvc=0
 
 if [ ! -z "$PS1" ]; then
