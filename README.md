@@ -67,7 +67,6 @@ These are the expected container image sizes, so you can plan your disk usage in
 
     REPOSITORY                                       TAG                        SIZE
     localhost/godot-fedora                           4.x-f36                    1.06 GB
-    localhost/godot-export                           4.x-f36                    1.54 GB
     localhost/godot-linux                            4.x-f36                    2.07 GB
     localhost/godot-windows                          4.x-f36                    1.81 GB
     localhost/godot-web                              4.x-f36                    2.2 GB

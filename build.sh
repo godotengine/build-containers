@@ -53,8 +53,6 @@ podman_build() {
     2>&1 | tee logs/"$1".log
 }
 
-podman_build export
-
 podman_build linux
 podman_build windows
 
