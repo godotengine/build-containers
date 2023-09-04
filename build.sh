@@ -7,7 +7,7 @@ source $basedir/setup.sh
 if [ -z "$1" -o -z "$2" ]; then
   echo "Usage: $0 <godot branch> <base distro>"
   echo
-  echo "Example: $0 3.x f35"
+  echo "Example: $0 4.x f39"
   echo
   echo "godot branch:"
   echo "        Informational, tracks the Godot branch these containers are intended for."
@@ -58,9 +58,9 @@ podman_build windows
 podman_build web
 podman_build android
 
-XCODE_SDK=14.1
-OSX_SDK=13.0
-IOS_SDK=16.1
+XCODE_SDK=15
+OSX_SDK=14.0
+IOS_SDK=17.0
 if [ ! -e "${files_root}"/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ]; then
   if [ ! -e "${files_root}"/Xcode_${XCODE_SDK}.xip ]; then
     echo "files/Xcode_${XCODE_SDK}.xip is required. It can be downloaded from https://developer.apple.com/download/more/ with a valid apple ID."

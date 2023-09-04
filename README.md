@@ -37,13 +37,13 @@ The `build.sh` script included is used to build the containers themselves.
 
 The two arguments can take any value and are meant to convey what Godot branch
 you are building for (e.g. `4.x`) and what Linux distribution the `Dockerfile.base`
-is based on (e.g. `f36` for Fedora 36).
+is based on (e.g. `f39` for Fedora 39).
 
 Run the command using:
 
-    ./build.sh 4.x f36
+    ./build.sh 4.x f39
 
-The above will generate images using the tag '4.x-f36'.
+The above will generate images using the tag '4.x-f39'.
 You can then specify it in the `build.sh` of
 [godot-build-scripts](https://github.com/godotengine/godot-build-scripts).
 
@@ -53,10 +53,10 @@ You can then specify it in the `build.sh` of
 If you don't need to build all versions or you want to try with a single target OS first,
 you can comment out the corresponding lines from the script:
 
-    $podman_build -t godot-linux:${img_version} -f Dockerfile.linux . 2>&1 | tee logs/linux.log
-    $podman_build -t godot-windows:${img_version} -f Dockerfile.windows . 2>&1 | tee logs/windows.log
-    $podman_build -t godot-web:${img_version} -f Dockerfile.web . 2>&1 | tee logs/web.log
-    $podman_build -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
+    podman_build linux
+    podman_build windows
+    podman_build web
+    podman_build android
     ...
 
 
@@ -64,28 +64,28 @@ you can comment out the corresponding lines from the script:
 
 These are the expected container image sizes, so you can plan your disk usage in advance:
 
-    REPOSITORY                                       TAG                        SIZE
-    localhost/godot-fedora                           4.x-f36                    1.06 GB
-    localhost/godot-linux                            4.x-f36                    2.07 GB
-    localhost/godot-windows                          4.x-f36                    1.81 GB
-    localhost/godot-web                              4.x-f36                    2.2 GB
-    localhost/godot-android                          4.x-f36                    4.24 GB
-    localhost/godot-osx                              4.x-f36                    4.56 GB
-    localhost/godot-ios                              4.x-f36                    5.01 GB
+    REPOSITORY                         TAG                SIZE
+    localhost/godot-fedora             4.x-f39            1.08 GB
+    localhost/godot-linux              4.x-f39            2.10 GB
+    localhost/godot-windows            4.x-f39            1.89 GB
+    localhost/godot-web                4.x-f39            2.24 GB
+    localhost/godot-android            4.x-f39            3.67 GB
+    localhost/godot-osx                4.x-f39            4.70 GB
+    localhost/godot-ios                4.x-f39            5.30 GB
 
 In addition to this, generating containers will also require some host disk space
-(around 10 GB) for the dependencies (Xcode).
+(up to 10 GB) for the dependencies (Xcode).
 
 
 ## Toolchains
 
-These are the toolchains currently in use for Godot 4.0 and later:
+These are the toolchains currently in use for Godot 4.2 and later:
 
-- Base image: Fedora 36
-- SCons: 4.4.0
+- Base image: Fedora 39
+- SCons: 4.5.2
 - Linux: GCC 10.2.0 built against glibc 2.19, binutils 2.35.1, from our own [Linux SDK](https://github.com/godotengine/buildroot)
-- Windows: MinGW 9.0.0, GCC 11.2.0, binutils 2.37
-- Web: Emscripten 3.1.18
-- Android: Android NDK 23.2.8568313, build-tools 32.0.0, platform android-32, CMake 3.18.1
-- macOS: Xcode 13.3.1 with LLVM Clang 13.0.1, MacOSX SDK 12.3
-- iOS: Xcode 13.3.1 with LLVM Clang 13.0.1, iPhoneOS SDK 15.4
+- Windows: MinGW 11.0.0, GCC 13.2.1, binutils 2.40
+- Web: Emscripten 3.1.39
+- Android: Android NDK 23.2.8568313, build-tools 33.0.2, platform android-33, CMake 3.22.1, JDK 17
+- macOS: Xcode 15.0 with Apple Clang (LLVM 16.0.0), MacOSX SDK 14.0
+- iOS: Xcode 15.0 with Apple Clang (LLVM 16.0.0), iPhoneOS SDK 17.0
