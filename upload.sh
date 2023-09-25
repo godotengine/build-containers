@@ -23,4 +23,3 @@ fi
 "$podman" push godot-android:${img_version} ${registry}/godot-private/android
 "$podman" push godot-ios:${img_version} ${registry}/godot-private/ios
 "$podman" push godot-osx:${img_version} ${registry}/godot-private/macosx
-"$podman" push godot-msvc:${img_version} ${registry}/godot-private/uwp
