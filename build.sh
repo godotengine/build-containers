@@ -4,24 +4,20 @@ basedir=$(cd $(dirname "$0"); pwd)
 
 source $basedir/setup.sh
 
-if [ -z "$1" -o -z "$2" ]; then
-  echo "Usage: $0 <godot branch> <base distro>"
+if [ -z "$1" ]; then
+  echo "Usage: $0 <godot branch>"
   echo
-  echo "Example: $0 3.x f35"
+  echo "Example: $0 3.x"
   echo
   echo "godot branch:"
   echo "        Informational, tracks the Godot branch these containers are intended for."
   echo
-  echo "base distro:"
-  echo "        Informational, tracks the base Linux distro these containers are based on."
-  echo
-  echo "The resulting image version will be <godot branch>-<base distro>."
+  echo "The resulting image version will be <godot branch>."
   exit 1
 fi
 
 godot_branch=$1
-base_distro=$2
-img_version=$godot_branch-$base_distro
+img_version=$godot_branch
 files_root="$basedir/files"
 
 if [ ! -z "$PS1" ]; then
