@@ -66,7 +66,7 @@ These are the expected container image sizes, so you can plan your disk usage in
 
     REPOSITORY                         TAG                SIZE
     localhost/godot-fedora             4.x-f39            1.08 GB
-    localhost/godot-linux              4.x-f39            2.10 GB
+    localhost/godot-linux              4.x-f39            2.86 GB
     localhost/godot-windows            4.x-f39            1.89 GB
     localhost/godot-web                4.x-f39            2.24 GB
     localhost/godot-android            4.x-f39            3.67 GB
@@ -83,7 +83,7 @@ These are the toolchains currently in use for Godot 4.2 and later:
 
 - Base image: Fedora 39
 - SCons: 4.5.2
-- Linux: GCC 10.2.0 built against glibc 2.19, binutils 2.35.1, from our own [Linux SDK](https://github.com/godotengine/buildroot)
+- Linux: GCC 13.2.0 built against glibc 2.28, binutils 2.40, from our own [Linux SDK](https://github.com/godotengine/buildroot)
 - Windows: MinGW 11.0.0, GCC 13.2.1, binutils 2.40
 - Web: Emscripten 3.1.39
 - Android: Android NDK 23.2.8568313, build-tools 33.0.2, platform android-33, CMake 3.22.1, JDK 17
