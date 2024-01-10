@@ -3,30 +3,31 @@ FROM godot-osx:${img_version}
 
 ARG mono_version
 
-ENV IOS_SDK=15.4
+ENV IOS_SDK=17.0
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       automake autoconf gcc gcc-c++ gcc-objc gcc-objc++ cmake libicu-devel libtool libxml2-devel openssl-devel perl python yasm && \
-    git clone --progress https://github.com/tpoechtrager/cctools-port.git && \
+    git clone --progress https://github.com/tpoechtrager/cctools-port && \
     cd /root/cctools-port && \
-    git checkout 04663295d0425abfac90a42440a7ec02d7155fea && \
+    git checkout 437ced391dbf14dce86f977ca050a750d5682f39 && \
+    curl -LO https://github.com/tpoechtrager/cctools-port/pull/136.patch && \
+    git apply 136.patch && \
     # arm64 device
     usage_examples/ios_toolchain/build.sh /root/files/iPhoneOS${IOS_SDK}.sdk.tar.xz arm64 && \
     mkdir -p /root/ioscross/arm64 && \
     mv usage_examples/ios_toolchain/target/* /root/ioscross/arm64 && \
     mkdir /root/ioscross/arm64/usr && \
     ln -s /root/ioscross/arm64/bin /root/ioscross/arm64/usr/bin && \
+    # Prepare for simulator builds
+    sed -i '/WRAPPER_SDKDIR/s/iPhoneOS/iPhoneSimulator/' usage_examples/ios_toolchain/build.sh && \
     # arm64 simulator
-    # Disabled for now as it doesn't work with cctools-port and current LLVM:
-    # Cf. https://github.com/tpoechtrager/cctools-port/issues/102
-    #sed -i 's/miphoneos-version-min/mios-simulator-version-min/g' usage_examples/ios_toolchain/wrapper.c && \
-    #usage_examples/ios_toolchain/build.sh /root/files/iPhoneSimulator${IOS_SDK}.sdk.tar.xz arm64 && \
-    #mkdir -p /root/ioscross/arm64_sim && \
-    #mv usage_examples/ios_toolchain/target/* /root/ioscross/arm64_sim && \
-    #mkdir /root/ioscross/arm64_sim/usr && \
-    #ln -s /root/ioscross/arm64_sim/bin /root/ioscross/arm64_sim/usr/bin && \
+    usage_examples/ios_toolchain/build.sh /root/files/iPhoneSimulator${IOS_SDK}.sdk.tar.xz arm64 && \
+    mkdir -p /root/ioscross/arm64_sim && \
+    mv usage_examples/ios_toolchain/target/* /root/ioscross/arm64_sim && \
+    mkdir /root/ioscross/arm64_sim/usr && \
+    ln -s /root/ioscross/arm64_sim/bin /root/ioscross/arm64_sim/usr/bin && \
     # x86_64 simulator
-    sed -i 's#^TRIPLE=.*#TRIPLE="x86_64-apple-darwin11"#' usage_examples/ios_toolchain/build.sh && \
+    sed -i 's/^TRIPLE=.*/TRIPLE="x86_64-apple-darwin11"/' usage_examples/ios_toolchain/build.sh && \
     usage_examples/ios_toolchain/build.sh /root/files/iPhoneSimulator${IOS_SDK}.sdk.tar.xz x86_64 && \
     mkdir -p /root/ioscross/x86_64_sim && \
     mv usage_examples/ios_toolchain/target/* /root/ioscross/x86_64_sim && \
@@ -39,19 +40,18 @@ ENV OSXCROSS_IOS=not_nothing
 ENV IOSCROSS_ROOT=/root/ioscross
 ENV PATH="/root/ioscross/arm64/bin:/root/ioscross/arm64_sim/bin:/root/ioscross/x86_64_sim/bin:${PATH}"
 
-RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
-    cp -a /root/files/${mono_version} /root && \
+RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
     cd godot-mono-builds && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
     python3 ios.py configure -j --target=arm64 --ios-version-min 10.0 --osx-toolchain ${OSXCROSS_ROOT} \
       --ios-toolchain ${IOSCROSS_ROOT}/arm64 --ios-sdk ${IOSCROSS_ROOT}/arm64/SDK/iPhoneOS${IOS_SDK}.sdk && \
     python3 ios.py make -j --target=arm64 && \
-    #python3 ios.py configure -j --target=arm64-sim --ios-version-min 10.0 --osx-toolchain ${OSXCROSS_ROOT} \
-    #  --ios-toolchain ${IOSCROSS_ROOT}/arm64_sim --ios-sdk ${IOSCROSS_ROOT}/arm64_sim/SDK/iPhoneOS${IOS_SDK}.sdk && \
-    #python3 ios.py make -j --target=arm64-sim && \
+    python3 ios.py configure -j --target=arm64-sim --ios-version-min 10.0 --osx-toolchain ${OSXCROSS_ROOT} \
+      --ios-toolchain ${IOSCROSS_ROOT}/arm64_sim --ios-sdk ${IOSCROSS_ROOT}/arm64_sim/SDK/iPhoneSimulator${IOS_SDK}.sdk && \
+    python3 ios.py make -j --target=arm64-sim && \
     python3 ios.py configure -j --target=x86_64 --ios-version-min 10.0 --osx-toolchain ${OSXCROSS_ROOT} \
-      --ios-toolchain ${IOSCROSS_ROOT}/x86_64_sim --ios-sdk ${IOSCROSS_ROOT}/x86_64_sim/SDK/iPhoneOS${IOS_SDK}.sdk && \
+      --ios-toolchain ${IOSCROSS_ROOT}/x86_64_sim --ios-sdk ${IOSCROSS_ROOT}/x86_64_sim/SDK/iPhoneSimulator${IOS_SDK}.sdk && \
     python3 ios.py make -j --target=x86_64 && \
     python3 bcl.py make -j --product=ios && \
     # TODO: Enable once godot-mono-builds supports osxcross for the cross-compiler.
@@ -63,7 +63,7 @@ RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mand
 
 # Until we can build the cross-compiler, we include a pre-made build in the container.
 RUN mkdir -p /root/aot-compilers/iphone-arm64 && \
-    curl -LO https://github.com/godotengine/godot-mono-builds/releases/download/release-8767196/ios-cross-arm64.zip && \
+    curl -LO https://github.com/godotengine/godot-mono-builds/releases/download/release-4912f62/ios-cross-arm64.zip && \
     dnf -y install --setopt=install_weak_deps=False p7zip && \
     7za e ios-cross-arm64.zip ios-cross-arm64-release/bin/aarch64-apple-darwin-mono-sgen -o/root/aot-compilers/iphone-arm64 && \
     rm ios-cross-arm64.zip

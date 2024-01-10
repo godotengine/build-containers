@@ -3,8 +3,7 @@ FROM godot-mono:${img_version}
 
 ARG mono_version
 
-RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
-    dnf -y install --setopt=install_weak_deps=False \
+RUN dnf -y install --setopt=install_weak_deps=False \
       mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static mingw64-gcc mingw64-gcc-c++ mingw64-winpthreads-static && \
     cp -a /root/files/${mono_version} /root && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
