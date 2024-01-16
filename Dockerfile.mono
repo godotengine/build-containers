@@ -3,8 +3,7 @@ FROM godot-fedora:${img_version}
 
 ARG mono_version
 
-RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
-    dnf -y install --setopt=install_weak_deps=False \
+RUN dnf -y install --setopt=install_weak_deps=False \
       autoconf automake cmake gcc gcc-c++ gettext libtool perl python-unversioned-command && \
     cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \

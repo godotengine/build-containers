@@ -1,17 +1,13 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
 
-podman=`which podman || true`
+basedir=$(cd $(dirname "$0"); pwd)
 
-if [ -z $podman ]; then
-  echo "podman needs to be in PATH for this script to work."
-  exit 1
-fi
+source $basedir/setup.sh
 
 if [ -z "$1" -o -z "$2" -o -z "$3" ]; then
   echo "Usage: $0 <godot branch> <base distro> <mono version>"
   echo
-  echo "Example: $0 3.x f35 mono-6.12.0.178"
+  echo "Example: $0 3.x f39 mono-6.12.0.198"
   echo
   echo "godot branch:"
   echo "        Informational, tracks the Godot branch these containers are intended for."
@@ -30,28 +26,28 @@ godot_branch=$1
 base_distro=$2
 mono_version=$3
 img_version=$godot_branch-$base_distro-$mono_version
-files_root=$(pwd)/files
+files_root=$basedir/files
 mono_root="${files_root}/${mono_version}"
 build_msvc=0
 
-# Confirm settings
-echo "Docker image tag: ${img_version}"
-echo "Mono branch: ${mono_version}"
-if [ -e ${mono_root} ]; then
-  mono_exists="(exists)"
+if [ ! -z "$PS1" ]; then
+  # Confirm settings
+  echo "Docker image tag: ${img_version}"
+  echo "Mono branch: ${mono_version}"
+  if [ -e ${mono_root} ]; then
+    mono_exists="(exists)"
+  fi
+  echo "Mono source folder: ${mono_root} ${mono_exists}"
+  echo
+  while true; do
+    read -p "Is this correct? [y/n] " yn
+    case $yn in
+      [Yy]* ) break;;
+      [Nn]* ) exit 1;;
+      * ) echo "Please answer yes or no.";;
+    esac
+  done
 fi
-echo "Mono source folder: ${mono_root} ${mono_exists}"
-echo
-while true; do
-  read -p "Is this correct? [y/n] " yn
-  case $yn in
-    [Yy]* ) break;;
-    [Nn]* ) exit 1;;
-    * ) echo "Please answer yes or no.";;
-  esac
-done
-
-mkdir -p logs
 
 # Check out and patch Mono version
 if [ ! -e ${mono_root} ]; then
@@ -62,43 +58,61 @@ if [ ! -e ${mono_root} ]; then
   # Set up godot-mono-builds in tree
   git clone --progress https://github.com/godotengine/godot-mono-builds
   pushd godot-mono-builds
-  git checkout 8767196960fb884ae95f337ee10cb131ae720086
+  git checkout 4912f62a8f263e5673012de6ed489402af2d63bb
   export MONO_SOURCE_ROOT=${mono_root}
   python3 patch_mono.py
   popd
   popd
 fi
 
-# You can add --no-cache  as an option to podman_build below to rebuild all containers from scratch
-export podman_build="$podman build --build-arg img_version=${img_version}"
-export podman_build_mono="$podman_build --build-arg mono_version=${mono_version} -v ${files_root}:/root/files:z"
+mkdir -p logs
 
-$podman build -v ${files_root}:/root/files:z -t godot-fedora:${img_version} -f Dockerfile.base . 2>&1 | tee logs/base.log
-$podman_build -t godot-export:${img_version} -f Dockerfile.export . 2>&1 | tee logs/export.log
+"$podman" build -t godot-fedora:${img_version} -f Dockerfile.base . 2>&1 | tee logs/base.log
 
-$podman_build_mono -t godot-mono:${img_version} -f Dockerfile.mono . 2>&1 | tee logs/mono.log
-$podman_build_mono -t godot-mono-glue:${img_version} -f Dockerfile.mono-glue . 2>&1 | tee logs/mono-glue.log
-$podman_build_mono -t godot-linux:${img_version} -f Dockerfile.linux . 2>&1 | tee logs/linux.log
-$podman_build_mono -t godot-windows:${img_version} -f Dockerfile.windows . 2>&1 | tee logs/windows.log
-$podman_build_mono -t godot-javascript:${img_version} -f Dockerfile.javascript . 2>&1 | tee logs/javascript.log
-$podman_build_mono -t godot-android:${img_version} -f Dockerfile.android . 2>&1 | tee logs/android.log
+podman_build() {
+  # You can add --no-cache as an option to podman_build below to rebuild all containers from scratch.
+  "$podman" build \
+    --build-arg img_version=${img_version} \
+    --build-arg mono_version=${mono_version} \
+    -v "${files_root}":/root/files:z \
+    -t godot-"$1:${img_version}" \
+    -f Dockerfile."$1" . \
+    2>&1 | tee logs/"$1".log
+}
 
-XCODE_SDK=13.3.1
-OSX_SDK=12.3
-IOS_SDK=15.4
-if [ ! -e files/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e files/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e files/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ]; then
-  if [ ! -e files/Xcode_${XCODE_SDK}.xip ]; then
-    echo "files/Xcode_${XCODE_SDK}.xip is required. It can be downloaded from https://developer.apple.com/download/more/ with a valid apple ID."
+podman_build export
+podman_build mono
+podman_build mono-glue
+
+podman_build linux
+podman_build windows
+
+podman_build javascript
+podman_build android
+
+XCODE_SDK=15
+OSX_SDK=14.0
+IOS_SDK=17.0
+if [ ! -e "${files_root}"/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ]; then
+  if [ ! -e "${files_root}"/Xcode_${XCODE_SDK}.xip ]; then
+    echo ""${files_root}"/Xcode_${XCODE_SDK}.xip is required. It can be downloaded from https://developer.apple.com/download/more/ with a valid apple ID."
     exit 1
   fi
 
   echo "Building OSX and iOS SDK packages. This will take a while"
-  $podman_build -t godot-xcode-packer:${img_version} -f Dockerfile.xcode -v ${files_root}:/root/files:z . 2>&1 | tee logs/xcode.log
-  $podman run -it --rm -v ${files_root}:/root/files:z -e XCODE_SDKV="${XCODE_SDK}" -e OSX_SDKV="${OSX_SDK}" -e IOS_SDKV="${IOS_SDK}" godot-xcode-packer:${img_version} 2>&1 | tee logs/xcode_packer.log
+  podman_build xcode
+
+  "$podman" run -it --rm \
+    -v "${files_root}":/root/files:z \
+    -e XCODE_SDKV="${XCODE_SDK}" \
+    -e OSX_SDKV="${OSX_SDK}" \
+    -e IOS_SDKV="${IOS_SDK}" \
+    godot-xcode:${img_version} \
+    2>&1 | tee logs/xcode_packer.log
 fi
 
-$podman_build_mono -t godot-osx:${img_version} -f Dockerfile.osx . 2>&1 | tee logs/osx.log
-$podman_build_mono -t godot-ios:${img_version} -f Dockerfile.ios . 2>&1 | tee logs/ios.log
+podman_build osx
+podman_build ios
 
 if [ "${build_msvc}" != "0" ]; then
   if [ ! -e files/msvc2017.tar ]; then
@@ -113,5 +127,5 @@ if [ "${build_msvc}" != "0" ]; then
     exit 1
   fi
 
-  $podman_build -t godot-msvc:${img_version} -f Dockerfile.msvc -v ${files_root}:/root/files:z . 2>&1 | tee logs/msvc.log
+  podman_build msvc
 fi

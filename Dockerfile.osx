@@ -3,17 +3,18 @@ FROM godot-mono:${img_version}
 
 ARG mono_version
 
-RUN if [ -z "${mono_version}" ]; then echo -e "\n\nargument mono-version is mandatory!\n\n"; exit 1; fi && \
-    dnf -y install --setopt=install_weak_deps=False \
-      automake autoconf bzip2-devel cmake libicu-devel libtool libxml2-devel openssl-devel yasm && \
-    git clone --progress https://github.com/tpoechtrager/osxcross.git && \
+RUN dnf -y install --setopt=install_weak_deps=False \
+      automake autoconf bzip2-devel cmake gcc gcc-c++ libdispatch libicu-devel libtool \
+      libxml2-devel openssl-devel uuid-devel yasm && \
+    git clone --progress https://github.com/tpoechtrager/osxcross && \
     cd /root/osxcross && \
-    git checkout 17bb5e2d0a46533c1dd525cf4e9a80d88bd9f00e && \
-    ln -s /root/files/MacOSX12.3.sdk.tar.xz /root/osxcross/tarballs && \
-    patch -p1 < /root/files/patches/osxcross-pr367-fix-github-dl-page.diff && \
+    git checkout 5e1b71fcceb23952f3229995edca1b6231525b5b && \
+    ln -s /root/files/MacOSX14.0.sdk.tar.xz /root/osxcross/tarballs && \
     export UNATTENDED=1 && \
-    # Custom build to ensure we have Clang version matching Xcode SDK.
-    CLANG_VERSION=13.0.1 ENABLE_CLANG_INSTALL=1 INSTALLPREFIX=/usr ./build_clang.sh && \
+    # Custom build Apple Clang to ensure compatibility.
+    # Find the equivalent LLVM version for the SDK from:
+    # https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
+    CLANG_VERSION=16.0.0 ENABLE_CLANG_INSTALL=1 INSTALLPREFIX=/usr ./build_apple_clang.sh && \
     ./build.sh && \
     ./build_compiler_rt.sh && \
     rm -rf /root/osxcross/build
@@ -25,7 +26,7 @@ RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
     patch -p1 < /root/files/patches/mono-btls-cmake-wrapper.patch && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
-    export OSXCROSS_SDK=21.4 && \
+    export OSXCROSS_SDK=23 && \
     cd /root/${mono_version}/godot-mono-builds && \
     python3 osx.py configure -j --target=x86_64 --target=arm64 && \
     python3 osx.py make -j --target=x86_64 --target=arm64 && \
