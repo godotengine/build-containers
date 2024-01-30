@@ -7,7 +7,8 @@ ENV GODOT_SDK_LINUX_ARM64=/root/aarch64-godot-linux-gnu_sdk-buildroot
 ENV GODOT_SDK_LINUX_ARM32=/root/arm-godot-linux-gnueabihf_sdk-buildroot
 ENV BASE_PATH=${PATH}
 
-RUN curl -LO https://downloads.tuxfamily.org/godotengine/toolchains/linux/2024-01-17/x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2 && \
+RUN dnf install -y wayland-devel && \
+    curl -LO https://downloads.tuxfamily.org/godotengine/toolchains/linux/2024-01-17/x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2 && \
     tar xf x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2 && \
     rm -f x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2 && \
     cd x86_64-godot-linux-gnu_sdk-buildroot && \

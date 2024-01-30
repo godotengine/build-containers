@@ -1,14 +1,19 @@
 ARG img_version
 FROM godot-fedora:${img_version}
 
+ENV OSX_SDK=14.2
+
 RUN dnf -y install --setopt=install_weak_deps=False \
       automake autoconf bzip2-devel cmake gcc gcc-c++ libdispatch libicu-devel libtool \
       libxml2-devel openssl-devel uuid-devel yasm && \
     git clone --progress https://github.com/tpoechtrager/osxcross && \
     cd /root/osxcross && \
-    git checkout 5e1b71fcceb23952f3229995edca1b6231525b5b && \
-    ln -s /root/files/MacOSX14.0.sdk.tar.xz /root/osxcross/tarballs && \
+    git checkout ff8d100f3f026b4ffbe4ce96d8aac4ce06f1278b && \
+    curl -LO https://github.com/tpoechtrager/osxcross/pull/415.patch && \
+    git apply 415.patch && \
+    ln -s /root/files/MacOSX${OSX_SDK}.sdk.tar.xz /root/osxcross/tarballs && \
     export UNATTENDED=1 && \
+    export SDK_VERSION=${OSX_SDK} && \
     # Custom build Apple Clang to ensure compatibility.
     # Find the equivalent LLVM version for the SDK from:
     # https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
