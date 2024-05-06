@@ -62,8 +62,10 @@ XCODE_SDK=15.2
 OSX_SDK=14.2
 IOS_SDK=17.2
 if [ ! -e "${files_root}"/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ]; then
-  if [ ! -e "${files_root}"/Xcode_${XCODE_SDK}.xip ]; then
-    echo "files/Xcode_${XCODE_SDK}.xip is required. It can be downloaded from https://developer.apple.com/download/more/ with a valid apple ID."
+  if [ ! -r "${files_root}"/Xcode_${XCODE_SDK}.xip ]; then
+    echo
+    echo "Error: 'files/Xcode_${XCODE_SDK}.xip' is required for Apple platforms, but was not found or couldn't be read."
+    echo "It can be downloaded from https://developer.apple.com/download/more/ with a valid apple ID."
     exit 1
   fi
 
