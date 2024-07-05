@@ -1,13 +1,10 @@
 ARG img_version
 FROM godot-fedora:${img_version}
 
-ENV EMSCRIPTEN_VERSION=3.1.61
+ENV EMSCRIPTEN_VERSION=3.1.62
 
 RUN git clone --branch ${EMSCRIPTEN_VERSION} --progress https://github.com/emscripten-core/emsdk && \
     emsdk/emsdk install ${EMSCRIPTEN_VERSION} && \
-    emsdk/emsdk activate ${EMSCRIPTEN_VERSION} && \
-    cd emsdk/upstream/emscripten && \
-    curl -LO https://github.com/emscripten-core/emscripten/pull/19496.patch && \
-    patch -p1 < 19496.patch
+    emsdk/emsdk activate ${EMSCRIPTEN_VERSION}
 
 CMD /bin/bash
