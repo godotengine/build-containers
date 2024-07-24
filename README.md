@@ -87,7 +87,7 @@ These are the toolchains currently in use for Godot 4.3 and later:
 - Windows:
   * x86_64/x86_32: MinGW 11.0.1, GCC 14.1.1, binutils 2.41
   * arm64: llvm-mingw 20240619, LLVM 18.1.8
-- Web: Emscripten 3.1.63
+- Web: Emscripten 3.1.64
 - Android: Android NDK 23.2.8568313, build-tools 34.0.0, platform android-34, CMake 3.22.1, JDK 17
 - macOS: Xcode 15.4 with Apple Clang (LLVM 16.0.0), MacOSX SDK 14.5
 - iOS: Xcode 15.4 with Apple Clang (LLVM 16.0.0), iPhoneOS SDK 17.5
