@@ -10,3 +10,6 @@
 
 files/mono-*/
 logs/
+
+# macOS
+.DS_Store
