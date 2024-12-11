@@ -81,13 +81,13 @@ In addition to this, generating containers will also require some host disk spac
 
 These are the toolchains currently in use for Godot 4.3 and later:
 
-- Base image: Fedora 40
-- SCons: 4.8.0
+- Base image: Fedora 41
+- SCons: 4.8.1
 - Linux: GCC 13.2.0 built against glibc 2.28, binutils 2.40, from our own [Linux SDK](https://github.com/godotengine/buildroot)
 - Windows:
-  * x86_64/x86_32: MinGW 11.0.1, GCC 14.1.1, binutils 2.41
-  * arm64: llvm-mingw 20240619, LLVM 18.1.8
+  * x86_64/x86_32: MinGW 12.0.0, GCC 14.2.1, binutils 2.42
+  * arm64: llvm-mingw 20241203, LLVM 19.1.5
 - Web: Emscripten 3.1.64
 - Android: Android NDK 23.2.8568313, build-tools 34.0.0, platform android-34, CMake 3.22.1, JDK 17
-- macOS: Xcode 15.4 with Apple Clang (LLVM 16.0.0), MacOSX SDK 14.5
-- iOS: Xcode 15.4 with Apple Clang (LLVM 16.0.0), iPhoneOS SDK 17.5
+- macOS: Xcode 16.2 with Apple Clang (LLVM 17.0.6), MacOSX SDK 15.2
+- iOS: Xcode 16.2 with Apple Clang (LLVM 17.0.6), iPhoneOS SDK 18.2
