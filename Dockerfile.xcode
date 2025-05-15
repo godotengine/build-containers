@@ -11,25 +11,43 @@ RUN dnf -y install --setopt=install_weak_deps=False \
 ENV XCODE_SDKV=
 ENV OSX_SDKV=
 ENV IOS_SDKV=
+ENV VISIONOS_SDKV=
 
 CMD mkdir -p /root/xcode && \
     cd /root/xcode && \
     xar -xf /root/files/Xcode_${XCODE_SDKV}.xip && \
     /root/pbzx/pbzx -n Content | cpio -i && \
+    # macOS
     export OSX_SDK=MacOSX${OSX_SDKV}.sdk && \
     cp -r Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk /tmp/${OSX_SDK} && \
     cd /tmp && \
     tar -cJf /root/files/${OSX_SDK}.tar.xz ${OSX_SDK} && \
     rm -rf ${OSX_SDK} && \
+    # iOS
     cd /root/xcode && \
     export IOS_SDK=iPhoneOS${IOS_SDKV}.sdk && \
-    export IOS_SIMULATOR_SDK=iPhoneSimulator${IOS_SDKV}.sdk && \
     cp -r Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk /tmp/${IOS_SDK} && \
     cd /tmp && \
     tar -cJf /root/files/${IOS_SDK}.tar.xz ${IOS_SDK} && \
     rm -rf ${IOS_SDK} && \
+    # iOS Simulator
     cd /root/xcode && \
+    export IOS_SIMULATOR_SDK=iPhoneSimulator${IOS_SDKV}.sdk && \
     cp -r Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk /tmp/${IOS_SIMULATOR_SDK} && \
     cd /tmp && \
     tar -cJf /root/files/${IOS_SIMULATOR_SDK}.tar.xz ${IOS_SIMULATOR_SDK} && \
-    rm -rf ${IOS_SIMULATOR_SDK}
+    rm -rf ${IOS_SIMULATOR_SDK} && \
+    # visionOS
+    cd /root/xcode && \
+    export VISIONOS_SDK=XROS${VISIONOS_SDKV}.sdk && \
+    cp -r Xcode.app/Contents/Developer/Platforms/XROS.platform/Developer/SDKs/XROS.sdk /tmp/${VISIONOS_SDK} && \
+    cd /tmp && \
+    tar -cJf /root/files/${VISIONOS_SDK}.tar.xz ${VISIONOS_SDK} && \
+    rm -rf ${VISIONOS_SDK} && \
+    # visionOS Simulator
+    cd /root/xcode && \
+    export VISIONOS_SIMULATOR_SDK=XRSimulator${VISIONOS_SDKV}.sdk && \
+    cp -r Xcode.app/Contents/Developer/Platforms/XRSimulator.platform/Developer/SDKs/XRSimulator.sdk /tmp/${VISIONOS_SIMULATOR_SDK} && \
+    cd /tmp && \
+    tar -cJf /root/files/${VISIONOS_SIMULATOR_SDK}.tar.xz ${VISIONOS_SIMULATOR_SDK} && \
+    rm -rf ${VISIONOS_SIMULATOR_SDK}
