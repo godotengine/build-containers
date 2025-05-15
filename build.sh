@@ -58,9 +58,9 @@ podman_build windows
 podman_build web
 podman_build android
 
-XCODE_SDK=16.2
-OSX_SDK=15.2
-IOS_SDK=18.2
+XCODE_SDK=16.3
+OSX_SDK=15.4
+IOS_SDK=18.4
 if [ ! -e "${files_root}"/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ]; then
   if [ ! -r "${files_root}"/Xcode_${XCODE_SDK}.xip ]; then
     echo
