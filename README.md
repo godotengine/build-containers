@@ -22,13 +22,15 @@ documented here.
 
 ## Requirements
 
-These containers have been tested under Fedora 36 (other distros/releases may work too).
+These containers have been tested under currently supported Fedora releases
+(other distros may work too).
 
-The tool used to build and manage the containers is `podman` (install it with `dnf -y podman`).
+The tool used to build and manage the containers is `podman` (install it with
+`dnf -y podman`).
 
-We currently use `podman` as root to build and use these containers. Documenting a workflow to
-configure the host OS to be able to do all this without root would be welcome (but back when we
-tried we ran into performance issues).
+We currently use `podman` as root to build and use these containers. Documenting
+a workflow to configure the host OS to be able to do all this without root would
+be welcome (but back when we tried we ran into performance issues).
 
 
 ## Usage
@@ -36,14 +38,14 @@ tried we ran into performance issues).
 The `build.sh` script included is used to build the containers themselves.
 
 The two arguments can take any value and are meant to convey what Godot branch
-you are building for (e.g. `4.3`) and what Linux distribution the `Dockerfile.base`
-is based on (e.g. `f40` for Fedora 40).
+you are building for (e.g. `4.5`) and what Linux distribution the `Dockerfile.base`
+is based on (e.g. `f42` for Fedora 42).
 
 Run the command using:
 
-    ./build.sh 4.3 f40
+    ./build.sh 4.5 f42
 
-The above will generate images using the tag '4.3-f40'.
+The above will generate images using the tag '4.5-f42'.
 You can then specify it in the `build.sh` of
 [godot-build-scripts](https://github.com/godotengine/godot-build-scripts).
 
@@ -65,13 +67,13 @@ you can comment out the corresponding lines from the script:
 These are the expected container image sizes, so you can plan your disk usage in advance:
 
     REPOSITORY                         TAG                SIZE
-    localhost/godot-fedora             4.3-f40            1.01 GB
-    localhost/godot-linux              4.3-f40            2.80 GB
-    localhost/godot-windows            4.3-f40            2.46 GB
-    localhost/godot-web                4.3-f40            2.41 GB
-    localhost/godot-android            4.3-f40            4.29 GB
-    localhost/godot-osx                4.3-f40            4.78 GB
-    localhost/godot-ios                4.3-f40            5.49 GB
+    localhost/godot-fedora             4.5-f42            949 MB
+    localhost/godot-linux              4.5-f42            2.74 GB
+    localhost/godot-windows            4.5-f42            2.54 GB
+    localhost/godot-web                4.5-f42            2.35 GB
+    localhost/godot-android            4.5-f42            4.19 GB
+    localhost/godot-osx                4.5-f42            5.30 GB
+    localhost/godot-ios                4.5-f42            6.11 GB
 
 In addition to this, generating containers will also require some host disk space
 (up to 10 GB) for the dependencies (Xcode).
@@ -81,13 +83,14 @@ In addition to this, generating containers will also require some host disk spac
 
 These are the toolchains currently in use for Godot 4.3 and later:
 
-- Base image: Fedora 41
-- SCons: 4.8.1
+- Base image: Fedora 42
+- SCons: 4.9.1
 - Linux: GCC 13.2.0 built against glibc 2.28, binutils 2.40, from our own [Linux SDK](https://github.com/godotengine/buildroot)
 - Windows:
-  * x86_64/x86_32: MinGW 12.0.0, GCC 14.2.1, binutils 2.42
-  * arm64: llvm-mingw 20241203, LLVM 19.1.5
-- Web: Emscripten 3.1.64
-- Android: Android NDK 23.2.8568313, build-tools 34.0.0, platform android-34, CMake 3.22.1, JDK 17
-- macOS: Xcode 16.2 with Apple Clang (LLVM 17.0.6), MacOSX SDK 15.2
-- iOS: Xcode 16.2 with Apple Clang (LLVM 17.0.6), iPhoneOS SDK 18.2
+  * x86_64/x86_32: MinGW 12.0.0, GCC 14.2.1, binutils 2.43.1
+  * arm64: llvm-mingw 20250528, LLVM 20.1.6
+- Web: Emscripten 4.0.10
+- Android: Android NDK 28.1.13356709, build-tools 35.0.0, platform android-35, CMake 3.31.6, JDK 21
+- Apple: Xcode 16.4 with Apple Clang (LLVM 19.1.4), cctools 1024.3, ld64 955.13
+  * macOS: MacOSX SDK 15.5
+  * iOS: iPhoneOS SDK 18.5
