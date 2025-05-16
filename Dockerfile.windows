@@ -3,9 +3,11 @@ FROM godot-fedora:${img_version}
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       mingw32-gcc mingw32-gcc-c++ mingw32-winpthreads-static mingw64-gcc mingw64-gcc-c++ mingw64-winpthreads-static && \
-    curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20241203/llvm-mingw-20241203-ucrt-ubuntu-20.04-x86_64.tar.xz && \
-    tar xf llvm-mingw-20241203-ucrt-ubuntu-20.04-x86_64.tar.xz && \
-    rm -f llvm-mingw-20241203-ucrt-ubuntu-20.04-x86_64.tar.xz && \
-    mv -f llvm-mingw-20241203-ucrt-ubuntu-20.04-x86_64 /root/llvm-mingw
+    export LLVM_MINGW_VERSION=20250514 && \
+    export LLVM_MINGW_NAME=llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-ubuntu-22.04-x86_64 && \
+    curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/${LLVM_MINGW_VERSION}/${LLVM_MINGW_NAME}.tar.xz && \
+    tar xf ${LLVM_MINGW_NAME}.tar.xz && \
+    rm -f ${LLVM_MINGW_NAME}.tar.xz && \
+    mv -f ${LLVM_MINGW_NAME} /root/llvm-mingw
 
 CMD /bin/bash

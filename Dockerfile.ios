@@ -1,13 +1,13 @@
 ARG img_version
 FROM godot-osx:${img_version}
 
-ENV IOS_SDK=18.2
+ENV IOS_SDK=18.4
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       automake autoconf gcc gcc-c++ gcc-objc gcc-objc++ cmake libicu-devel libtool libxml2-devel openssl-devel perl python yasm && \
     git clone --progress https://github.com/tpoechtrager/cctools-port && \
     cd /root/cctools-port && \
-    git checkout 81f205e8ca6bbf2fdbcb6948132454fd1f97839e && \
+    git checkout 7224fd5c9390ea15cff6ee69ff92ea677b40014b && \
     # arm64 device
     usage_examples/ios_toolchain/build.sh /root/files/iPhoneOS${IOS_SDK}.sdk.tar.xz arm64 && \
     mkdir -p /root/ioscross/arm64 && \
