@@ -1,7 +1,7 @@
 ARG img_version
 FROM godot-fedora:${img_version}
 
-ENV OSX_SDK=15.2
+ENV OSX_SDK=16.2
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       automake autoconf bzip2-devel cmake gcc gcc-c++ libdispatch libicu-devel libtool \
