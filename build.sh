@@ -61,7 +61,11 @@ podman_build android
 XCODE_SDK=16.4
 OSX_SDK=15.5
 IOS_SDK=18.5
-if [ ! -e "${files_root}"/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ]; then
+TVOS_SDK=18.5
+VISIONOS_SDK=2.5
+if [ ! -e "${files_root}"/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneOS${IOS_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/iPhoneSimulator${IOS_SDK}.sdk.tar.xz ] \
+|| [ ! -e "${files_root}"/AppleTVOS${TVOS_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/AppleTVSimulator${TVOS_SDK}.sdk.tar.xz ] \
+|| [ ! -e "${files_root}"/XROS${VISIONOS_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}"/XRSimulator${VISIONOS_SDK}.sdk.tar.xz ]; then
   if [ ! -r "${files_root}"/Xcode_${XCODE_SDK}.xip ]; then
     echo
     echo "Error: 'files/Xcode_${XCODE_SDK}.xip' is required for Apple platforms, but was not found or couldn't be read."
@@ -69,16 +73,18 @@ if [ ! -e "${files_root}"/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}
     exit 1
   fi
 
-  echo "Building OSX and iOS SDK packages. This will take a while"
+  echo "Extracting Apple SDK packages. This will take a while."
   podman_build xcode
   "$podman" run -it --rm \
     -v "${files_root}":/root/files:z \
     -e XCODE_SDKV="${XCODE_SDK}" \
     -e OSX_SDKV="${OSX_SDK}" \
     -e IOS_SDKV="${IOS_SDK}" \
+    -e TVOS_SDKV="${TVOS_SDK}" \
+    -e VISIONOS_SDKV="${VISIONOS_SDK}" \
     godot-xcode:${img_version} \
     2>&1 | tee logs/xcode_packer.log
 fi
 
 podman_build osx
-podman_build ios
+podman_build appleembedded

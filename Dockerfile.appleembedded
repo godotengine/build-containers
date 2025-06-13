@@ -1,0 +1,54 @@
+ARG img_version
+FROM godot-osx:${img_version}
+
+RUN dnf -y install --setopt=install_weak_deps=False \
+      automake autoconf gcc gcc-c++ gcc-objc gcc-objc++ cmake libicu-devel libtool libxml2-devel openssl-devel perl python yasm
+
+ENV IOS_SDK=18.5
+ENV TVOS_SDK=18.5
+ENV XROS_SDK=2.5
+
+# Extract the SDKs for iOS, tvOS and XROS, including the simulator SDKs
+# into separate layers, so this work is not repeated each time the image is built.
+RUN mkdir -p /root/SDKs
+RUN cd /root/SDKs && tar xf /root/files/iPhoneOS${IOS_SDK}.sdk.tar.xz
+RUN cd /root/SDKs && tar xf /root/files/iPhoneSimulator${IOS_SDK}.sdk.tar.xz
+RUN cd /root/SDKs && tar xf /root/files/AppleTVOS${TVOS_SDK}.sdk.tar.xz
+RUN cd /root/SDKs && tar xf /root/files/AppleTVSimulator${TVOS_SDK}.sdk.tar.xz
+RUN cd /root/SDKs && tar xf /root/files/XROS${XROS_SDK}.sdk.tar.xz
+RUN cd /root/SDKs && tar xf /root/files/XRSimulator${XROS_SDK}.sdk.tar.xz
+
+RUN git clone --depth 1 --no-checkout https://github.com/tpoechtrager/cctools-port.git && \
+    cd /root/cctools-port && \
+    git fetch --depth 1 origin 7224fd5c9390ea15cff6ee69ff92ea677b40014b && \
+    git checkout 7224fd5c9390ea15cff6ee69ff92ea677b40014b
+
+COPY files/appleembedded/build.sh /root/cctools-port/usage_examples/ios_toolchain/build.sh
+COPY files/appleembedded/wrapper.c /root/cctools-port/usage_examples/ios_toolchain/wrapper.c
+
+RUN chmod +x /root/cctools-port/usage_examples/ios_toolchain/build.sh
+
+RUN cd /root/cctools-port && \
+    usage_examples/ios_toolchain/build.sh arm64 && \
+    mkdir -p /root/ioscross/arm64 && \
+    mv usage_examples/ios_toolchain/target/* /root/ioscross/arm64 && \
+    mkdir /root/ioscross/arm64/usr && \
+    ln -s /root/ioscross/arm64/bin /root/ioscross/arm64/usr/bin
+
+RUN cd /root/cctools-port && \
+    usage_examples/ios_toolchain/build.sh x86_64 && \
+    mkdir -p /root/ioscross/x86_64 && \
+    mv usage_examples/ios_toolchain/target/* /root/ioscross/x86_64 && \
+    mkdir /root/ioscross/x86_64/usr && \
+    ln -s /root/ioscross/x86_64/bin /root/ioscross/x86_64/usr/bin
+
+RUN PATH=/root/ioscross/arm64/bin:$PATH /root/files/appleembedded/check-arm.sh
+
+ENV OSXCROSS_IOS=not_nothing
+ENV OSXCROSS_TVOS=not_nothing
+ENV OSXCROSS_VISIONOS=not_nothing
+ENV OSXCROSS_APPLEEMBEDDED=not_nothing
+
+ENV PATH="/root/ioscross/arm64/bin:/root/ioscross/x86_64/bin:${PATH}"
+
+CMD /bin/bash

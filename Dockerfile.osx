@@ -9,6 +9,9 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     git clone --progress https://github.com/tpoechtrager/osxcross && \
     cd /root/osxcross && \
     git checkout 310196974007fc916f9be1877731b716a4854f72 && \
+    # Patch to fix visionOS support.
+    # See: https://github.com/llvm/llvm-project/issues/142502
+    patch -p1 < /root/files/patches/osxcross-fix-visionos.patch && \
     ln -s /root/files/MacOSX${OSX_SDK}.sdk.tar.xz /root/osxcross/tarballs && \
     export UNATTENDED=1 && \
     export SDK_VERSION=${OSX_SDK} && \

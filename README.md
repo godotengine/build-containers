@@ -73,7 +73,7 @@ These are the expected container image sizes, so you can plan your disk usage in
     localhost/godot-web                4.5-f42            2.35 GB
     localhost/godot-android            4.5-f42            4.19 GB
     localhost/godot-osx                4.5-f42            5.30 GB
-    localhost/godot-ios                4.5-f42            6.11 GB
+    localhost/godot-appleembedded      4.5-f42            14.1 GB
 
 In addition to this, generating containers will also require some host disk space
 (up to 10 GB) for the dependencies (Xcode).
@@ -93,4 +93,4 @@ These are the toolchains currently in use for Godot 4.3 and later:
 - Android: Android NDK 28.1.13356709, build-tools 35.0.0, platform android-35, CMake 3.31.6, JDK 21
 - Apple: Xcode 16.4 with Apple Clang (LLVM 19.1.4), cctools 1024.3, ld64 955.13
   * macOS: MacOSX SDK 15.5
-  * iOS: iPhoneOS SDK 18.5
+  * Apple Embedded: iPhoneOS and iPhoneSimulator SDKs 18.5, AppleTVOS and AppleTVSimulator SDKs 18.5, XROS and XRSimulator SDKs 2.5

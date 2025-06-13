@@ -11,25 +11,10 @@ RUN dnf -y install --setopt=install_weak_deps=False \
 ENV XCODE_SDKV=
 ENV OSX_SDKV=
 ENV IOS_SDKV=
+ENV TVOS_SDKV=
+ENV VISIONOS_SDKV=
 
-CMD mkdir -p /root/xcode && \
-    cd /root/xcode && \
-    xar -xf /root/files/Xcode_${XCODE_SDKV}.xip && \
-    /root/pbzx/pbzx -n Content | cpio -i && \
-    export OSX_SDK=MacOSX${OSX_SDKV}.sdk && \
-    cp -r Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk /tmp/${OSX_SDK} && \
-    cd /tmp && \
-    tar -cJf /root/files/${OSX_SDK}.tar.xz ${OSX_SDK} && \
-    rm -rf ${OSX_SDK} && \
-    cd /root/xcode && \
-    export IOS_SDK=iPhoneOS${IOS_SDKV}.sdk && \
-    export IOS_SIMULATOR_SDK=iPhoneSimulator${IOS_SDKV}.sdk && \
-    cp -r Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk /tmp/${IOS_SDK} && \
-    cd /tmp && \
-    tar -cJf /root/files/${IOS_SDK}.tar.xz ${IOS_SDK} && \
-    rm -rf ${IOS_SDK} && \
-    cd /root/xcode && \
-    cp -r Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk /tmp/${IOS_SIMULATOR_SDK} && \
-    cd /tmp && \
-    tar -cJf /root/files/${IOS_SIMULATOR_SDK}.tar.xz ${IOS_SIMULATOR_SDK} && \
-    rm -rf ${IOS_SIMULATOR_SDK}
+COPY extract_xcode_sdks.sh /root/extract_xcode_sdks.sh
+RUN chmod +x /root/extract_xcode_sdks.sh
+
+CMD /root/extract_xcode_sdks.sh

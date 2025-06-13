@@ -1,0 +1,118 @@
+diff --git a/build_clang.sh b/build_clang.sh
+index 0d9c36b..57d967e 100755
+--- a/build_clang.sh
++++ b/build_clang.sh
+@@ -149,6 +149,15 @@ if [ $GITPROJECT == "apple" ]; then
+   # lld has been broken by this PR:
+   # https://github.com/swiftlang/llvm-project/pull/8119
+   patch -p1 < $PATCH_DIR/unbreak-apple-lld.patch || true
++
++  if ([[ $CLANG_VERSION == 19* ]]); then
++    # availability attributes for visionos / xros don't respect being derived from iOS
++    # and this patch fixes that
++    #
++    # https://github.com/swiftlang/llvm-project/issues/10782
++    patch -p1 < $PATCH_DIR/xros-availability-clang.patch || true
++  fi
++
+   popd &>/dev/null
+ fi
+ 
+diff --git a/build_compiler_rt.sh b/build_compiler_rt.sh
+index da64909..feb9990 100755
+--- a/build_compiler_rt.sh
++++ b/build_compiler_rt.sh
+@@ -98,6 +98,16 @@ fi
+ get_sources https://github.com/llvm/llvm-project.git $BRANCH "compiler-rt"
+ 
+ if [ $f_res -eq 1 ]; then
++  if [ $(osxcross-cmp $CLANG_VERSION ">=" 19.0) -eq 1 ]; then
++    pushd "$CURRENT_BUILD_PROJECT_NAME"
++    # availability attributes for visionos / xros don't respect being derived from iOS
++    # and this patch fixes that
++    #
++    # https://github.com/swiftlang/llvm-project/issues/10782
++    patch -p1 < $PATCH_DIR/xros-availability-clang.patch || true
++    popd
++  fi
++
+   pushd "$CURRENT_BUILD_PROJECT_NAME/compiler-rt" &>/dev/null
+ 
+   if [ $(osxcross-cmp $SDK_VERSION "<=" 10.11) -eq 1 ]; then
+diff --git a/patches/xros-availability-clang.patch b/patches/xros-availability-clang.patch
+new file mode 100644
+index 0000000..2666a18
+--- /dev/null
++++ b/patches/xros-availability-clang.patch
+@@ -0,0 +1,71 @@
++diff --git a/clang/include/clang/Basic/DarwinSDKInfo.h b/clang/include/clang/Basic/DarwinSDKInfo.h
++index db20b968a..33b36f53c 100644
++--- a/clang/include/clang/Basic/DarwinSDKInfo.h
+++++ b/clang/include/clang/Basic/DarwinSDKInfo.h
++@@ -72,6 +72,13 @@ public:
++                        llvm::Triple::TvOS, llvm::Triple::UnknownEnvironment);
++     }
++ 
+++    /// Returns the os-environment mapping pair that's used to represent the
+++    /// iOS -> visionOS version mapping.
+++    static inline constexpr OSEnvPair iOStoXROSPair() {
+++      return OSEnvPair(llvm::Triple::IOS, llvm::Triple::UnknownEnvironment,
+++                       llvm::Triple::XROS, llvm::Triple::UnknownEnvironment);
+++    }
+++
++   private:
++     StorageType Value;
++ 
++diff --git a/clang/lib/Sema/SemaDeclAttr.cpp b/clang/lib/Sema/SemaDeclAttr.cpp
++index e2eada24f..26290b3ba 100644
++--- a/clang/lib/Sema/SemaDeclAttr.cpp
+++++ b/clang/lib/Sema/SemaDeclAttr.cpp
++@@ -2415,6 +2415,48 @@ static void handleAvailabilityAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
++       auto NewDeprecated = AdjustTvOSVersion(Deprecated.Version);
++       auto NewObsoleted = AdjustTvOSVersion(Obsoleted.Version);
++ 
+++      AvailabilityAttr *NewAttr = S.mergeAvailabilityAttr(
+++          ND, AL, NewII, true /*Implicit*/, NewIntroduced, NewDeprecated,
+++          NewObsoleted, IsUnavailable, Str, IsStrict, Replacement,
+++          Sema::AMK_None, PriorityModifier + Sema::AP_InferredFromOtherPlatform,
+++          IIEnvironment);
+++      if (NewAttr)
+++        D->addAttr(NewAttr);
+++    }
+++  } else if (S.Context.getTargetInfo().getTriple().isXROS()) {
+++    // Transcribe "ios" to "visionos" (and add a new attribute) if the versioning
+++    // matches before the start of the visionOS platform.
+++    IdentifierInfo *NewII = nullptr;
+++    if (II->getName() == "ios")
+++      NewII = &S.Context.Idents.get("xros");
+++    else if (II->getName() == "ios_app_extension")
+++      NewII = &S.Context.Idents.get("xros_app_extension");
+++
+++    if (NewII) {
+++      const auto *SDKInfo = S.getDarwinSDKInfoForAvailabilityChecking();
+++      const auto *IOSToXROSMapping =
+++          SDKInfo ? SDKInfo->getVersionMapping(
+++                        DarwinSDKInfo::OSEnvPair::iOStoXROSPair())
+++                  : nullptr;
+++
+++      auto AdjustTvOSVersion =
+++          [IOSToXROSMapping](VersionTuple Version) -> VersionTuple {
+++        if (Version.empty())
+++          return Version;
+++
+++        if (IOSToXROSMapping) {
+++          if (auto MappedVersion = IOSToXROSMapping->map(
+++                  Version, VersionTuple(1, 0), std::nullopt)) {
+++            return *MappedVersion;
+++          }
+++        }
+++        return Version;
+++      };
+++
+++      auto NewIntroduced = AdjustTvOSVersion(Introduced.Version);
+++      auto NewDeprecated = AdjustTvOSVersion(Deprecated.Version);
+++      auto NewObsoleted = AdjustTvOSVersion(Obsoleted.Version);
+++
++       AvailabilityAttr *NewAttr = S.mergeAvailabilityAttr(
++           ND, AL, NewII, true /*Implicit*/, NewIntroduced, NewDeprecated,
++           NewObsoleted, IsUnavailable, Str, IsStrict, Replacement,
