@@ -2,11 +2,7 @@ ARG img_version
 FROM godot-fedora:${img_version}
 
 RUN dnf -y install --setopt=install_weak_deps=False \
-      clang xar xar-devel xz-devel cpio && \
-    git clone --progress https://github.com/nrosenstein-stuff/pbzx && \
-    cd pbzx && \
-    git checkout bf536e167f2e514866f91d7baa0df1dff5a13711 && \
-    clang -O3 -llzma -lxar -I /usr/local/include pbzx.c -o pbzx
+  cpio python
 
 ENV XCODE_SDKV=
 ENV OSX_SDKV=
@@ -14,8 +10,7 @@ ENV IOS_SDKV=
 
 CMD mkdir -p /root/xcode && \
     cd /root/xcode && \
-    xar -xf /root/files/Xcode_${XCODE_SDKV}.xip && \
-    /root/pbzx/pbzx -n Content | cpio -i && \
+    /root/files/extract_xcode.py -f /root/files/Xcode_${XCODE_SDKV}.xip | cpio -i && \
     export OSX_SDK=MacOSX${OSX_SDKV}.sdk && \
     cp -r Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk /tmp/${OSX_SDK} && \
     cd /tmp && \
