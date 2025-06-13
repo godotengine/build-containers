@@ -40,9 +40,11 @@ fi
 
 mkdir -p logs
 
+printf "\n=> Building godot-%s\n" "fedora" 
 "$podman" build -t godot-fedora:${img_version} -f Dockerfile.base . 2>&1 | tee logs/base.log
 
 podman_build() {
+  printf "\n=> Building godot-%s\n" "$1" 
   # You can add --no-cache as an option to podman_build below to rebuild all containers from scratch.
   "$podman" build \
     --build-arg img_version=${img_version} \
@@ -71,6 +73,7 @@ if [ ! -e "${files_root}"/MacOSX${OSX_SDK}.sdk.tar.xz ] || [ ! -e "${files_root}
 
   echo "Building OSX and iOS SDK packages. This will take a while"
   podman_build xcode
+  printf "\n=> Running godot-%s\n" "xcode"
   "$podman" run -it --rm \
     -v "${files_root}":/root/files:z \
     -e XCODE_SDKV="${XCODE_SDK}" \
