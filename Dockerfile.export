@@ -1,8 +1,10 @@
 ARG img_version
 FROM godot-fedora:${img_version}
 
-RUN dnf -y install --setopt=install_weak_deps=False \
+RUN dnf -y install adoptium-temurin-java-repository && \
+    dnf config-manager setopt adoptium-temurin-java-repository.enabled=1 && \
+    dnf -y install --setopt=install_weak_deps=False \
       xorg-x11-server-Xvfb libXcursor libXinerama libXrandr libXi \
-      alsa-lib pulseaudio-libs mesa-dri-drivers java-11-openjdk-devel
+      alsa-lib pulseaudio-libs mesa-dri-drivers temurin-17-jdk
 
 CMD /bin/bash

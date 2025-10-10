@@ -3,18 +3,23 @@ FROM godot-mono:${img_version}
 
 ARG mono_version
 
+ENV OSX_SDK=15.2
+
 RUN dnf -y install --setopt=install_weak_deps=False \
       automake autoconf bzip2-devel cmake gcc gcc-c++ libdispatch libicu-devel libtool \
       libxml2-devel openssl-devel uuid-devel yasm && \
     git clone --progress https://github.com/tpoechtrager/osxcross && \
     cd /root/osxcross && \
-    git checkout 5e1b71fcceb23952f3229995edca1b6231525b5b && \
-    ln -s /root/files/MacOSX14.0.sdk.tar.xz /root/osxcross/tarballs && \
+    git checkout f873f534c6cdb0776e457af8c7513da1e02abe59 && \
+    curl -LO https://github.com/akien-mga/osxcross/commit/38c6b5f68499a3aaa7ead5e7afa04fe1ed6e1454.patch && \
+    git apply 38c6b5f68499a3aaa7ead5e7afa04fe1ed6e1454.patch && \
+    ln -s /root/files/MacOSX${OSX_SDK}.sdk.tar.xz /root/osxcross/tarballs && \
     export UNATTENDED=1 && \
+    export SDK_VERSION=${OSX_SDK} && \
     # Custom build Apple Clang to ensure compatibility.
     # Find the equivalent LLVM version for the SDK from:
     # https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-    CLANG_VERSION=16.0.0 ENABLE_CLANG_INSTALL=1 INSTALLPREFIX=/usr ./build_apple_clang.sh && \
+    CLANG_VERSION=17.0.6 ENABLE_CLANG_INSTALL=1 INSTALLPREFIX=/usr ./build_apple_clang.sh && \
     ./build.sh && \
     ./build_compiler_rt.sh && \
     rm -rf /root/osxcross/build
@@ -26,7 +31,7 @@ RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
     patch -p1 < /root/files/patches/mono-btls-cmake-wrapper.patch && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
-    export OSXCROSS_SDK=23 && \
+    export OSXCROSS_SDK=24.2 && \
     cd /root/${mono_version}/godot-mono-builds && \
     python3 osx.py configure -j --target=x86_64 --target=arm64 && \
     python3 osx.py make -j --target=x86_64 --target=arm64 && \

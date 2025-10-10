@@ -3,15 +3,13 @@ FROM godot-osx:${img_version}
 
 ARG mono_version
 
-ENV IOS_SDK=17.0
+ENV IOS_SDK=18.2
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       automake autoconf gcc gcc-c++ gcc-objc gcc-objc++ cmake libicu-devel libtool libxml2-devel openssl-devel perl python yasm && \
     git clone --progress https://github.com/tpoechtrager/cctools-port && \
     cd /root/cctools-port && \
-    git checkout 437ced391dbf14dce86f977ca050a750d5682f39 && \
-    curl -LO https://github.com/tpoechtrager/cctools-port/pull/136.patch && \
-    git apply 136.patch && \
+    git checkout 19383894833e22f5c41c82cacbcf2e9f5aac93da && \
     # arm64 device
     usage_examples/ios_toolchain/build.sh /root/files/iPhoneOS${IOS_SDK}.sdk.tar.xz arm64 && \
     mkdir -p /root/ioscross/arm64 && \
@@ -63,7 +61,7 @@ RUN cp -a /root/files/${mono_version} /root && \
 
 # Until we can build the cross-compiler, we include a pre-made build in the container.
 RUN mkdir -p /root/aot-compilers/iphone-arm64 && \
-    curl -LO https://github.com/godotengine/godot-mono-builds/releases/download/release-4912f62/ios-cross-arm64.zip && \
+    curl -LO https://github.com/godotengine/godot-mono-builds/releases/download/release-ae49eba/ios-cross-arm64.zip && \
     dnf -y install --setopt=install_weak_deps=False p7zip && \
     7za e ios-cross-arm64.zip ios-cross-arm64-release/bin/aarch64-apple-darwin-mono-sgen -o/root/aot-compilers/iphone-arm64 && \
     rm ios-cross-arm64.zip
