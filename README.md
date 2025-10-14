@@ -70,17 +70,17 @@ you can comment out the corresponding lines from the script:
 These are the expected container image sizes, so you can plan your disk usage in advance:
 
     REPOSITORY                                       TAG                        SIZE
-    localhost/godot-fedora                           3.x-f39-mono-6.12.0.198    624 MB
-    localhost/godot-export                           3.x-f39-mono-6.12.0.198    1.14 GB
-    localhost/godot-mono                             3.x-f39-mono-6.12.0.198    1.52 GB
-    localhost/godot-mono-glue                        3.x-f39-mono-6.12.0.198    1.86 GB
-    localhost/godot-linux                            3.x-f39-mono-6.12.0.198    4.54 GB
-    localhost/godot-windows                          3.x-f39-mono-6.12.0.198    3.48 GB
-    localhost/godot-javascript                       3.x-f39-mono-6.12.0.198    3.97 GB
-    localhost/godot-android                          3.x-f39-mono-6.12.0.198    6.41 GB
-    localhost/godot-xcode                            3.x-f39-mono-6.12.0.198    1.07 GB
-    localhost/godot-osx                              3.x-f39-mono-6.12.0.198    6.05 GB
-    localhost/godot-ios                              3.x-f39-mono-6.12.0.198    7.48 GB
+    localhost/godot-fedora                           3.x-f42-mono-6.12.0.206    425 MB
+    localhost/godot-export                           3.x-f42-mono-6.12.0.206    1.02 GB
+    localhost/godot-mono                             3.x-f42-mono-6.12.0.206    1.31 GB
+    localhost/godot-mono-glue                        3.x-f42-mono-6.12.0.206    1.61 GB
+    localhost/godot-linux                            3.x-f42-mono-6.12.0.206    4.33 GB
+    localhost/godot-windows                          3.x-f42-mono-6.12.0.206    3.44 GB
+    localhost/godot-javascript                       3.x-f42-mono-6.12.0.206    3.76 GB
+    localhost/godot-android                          3.x-f42-mono-6.12.0.206    6.27 GB
+    localhost/godot-xcode                            3.x-f42-mono-6.12.0.206    924 MB
+    localhost/godot-osx                              3.x-f42-mono-6.12.0.206    6.13 GB
+    localhost/godot-ios                              3.x-f42-mono-6.12.0.206    7.56 GB
 
 In addition to this, generating containers will also require some host disk space
 (up to 30 GB) for the downloaded Mono sources and dependencies (Xcode, MSVC).
@@ -90,14 +90,14 @@ In addition to this, generating containers will also require some host disk spac
 
 These are the toolchains currently in use for Godot 3.6 and later:
 
-- Base image: Fedora 39
-- Mono version: 6.12.0.198
-- SCons: 4.5.2
+- Base image: Fedora 42
+- Mono version: 6.12.0.206
+- SCons: 4.10.0
 - Linux: GCC 13.2.0 built against glibc 2.28, binutils 2.40, from our own [Linux SDK](https://github.com/godotengine/buildroot)
-- Windows: MinGW 11.0.0, GCC 13.2.1, binutils 2.40
+- Windows: MinGW 12.0.0, GCC 14.2.1, binutils 2.43.1
 - HTML5: Emscripten 3.1.39 (standard builds), Emscripten 1.39.9 (Mono builds)
-- Android: Android NDK 23.2.8568313, build-tools 33.0.2, platform android-33, CMake 3.22.1, JDK 11
-- macOS: Xcode 15.0 with Apple Clang (LLVM 16.0.0), MacOSX SDK 14.0
-- iOS: Xcode 15.0 with Apple Clang (LLVM 16.0.0), iPhoneOS SDK 17.0
+- Android: Android NDK 23.2.8568313, build-tools 34.0.0, platform android-34, CMake 3.31.6, JDK 17
+- macOS: Xcode 16.2 with Apple Clang (LLVM 17.0.6), MacOSX SDK 15.2
+- iOS: Xcode 16.2 with Apple Clang (LLVM 17.0.6), iPhoneOS SDK 18.2
 - UWP: Visual Studio 2017, current configuration sadly not easily reproducible
   (`Dockerfile.msvc` image is not compiled by default as it doesn't work)
