@@ -42,13 +42,13 @@ RUN cp -a /root/files/${mono_version} /root && \
     cd /root/${mono_version} && \
     cd godot-mono-builds && \
     export MONO_SOURCE_ROOT=/root/${mono_version} && \
-    python3 ios.py configure -j --target=arm64 --ios-version-min 10.0 --osx-toolchain ${OSXCROSS_ROOT} \
+    python3 ios.py configure -j --target=arm64 --ios-version-min 12.0 --osx-toolchain ${OSXCROSS_ROOT} \
       --ios-toolchain ${IOSCROSS_ROOT}/arm64 --ios-sdk ${IOSCROSS_ROOT}/arm64/SDK/iPhoneOS${IOS_SDK}.sdk && \
     python3 ios.py make -j --target=arm64 && \
-    python3 ios.py configure -j --target=arm64-sim --ios-version-min 10.0 --osx-toolchain ${OSXCROSS_ROOT} \
+    python3 ios.py configure -j --target=arm64-sim --ios-version-min 12.0 --osx-toolchain ${OSXCROSS_ROOT} \
       --ios-toolchain ${IOSCROSS_ROOT}/arm64_sim --ios-sdk ${IOSCROSS_ROOT}/arm64_sim/SDK/iPhoneSimulator${IOS_SDK}.sdk && \
     python3 ios.py make -j --target=arm64-sim && \
-    python3 ios.py configure -j --target=x86_64 --ios-version-min 10.0 --osx-toolchain ${OSXCROSS_ROOT} \
+    python3 ios.py configure -j --target=x86_64 --ios-version-min 12.0 --osx-toolchain ${OSXCROSS_ROOT} \
       --ios-toolchain ${IOSCROSS_ROOT}/x86_64_sim --ios-sdk ${IOSCROSS_ROOT}/x86_64_sim/SDK/iPhoneSimulator${IOS_SDK}.sdk && \
     python3 ios.py make -j --target=x86_64 && \
     python3 bcl.py make -j --product=ios && \
