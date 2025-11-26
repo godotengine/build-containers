@@ -7,7 +7,7 @@ source $basedir/setup.sh
 if [ -z "$1" -o -z "$2" ]; then
   echo "Usage: $0 <godot branch> <base distro>"
   echo
-  echo "Example: $0 4.x f39"
+  echo "Example: $0 2.1 f43"
   echo
   echo "godot branch:"
   echo "        Informational, tracks the Godot branch these containers are intended for."

@@ -8,7 +8,7 @@ RUN dnf -y install --setopt=install_weak_deps=False \
       libxml2-devel openssl-devel uuid-devel yasm && \
     git clone --progress https://github.com/tpoechtrager/osxcross && \
     cd /root/osxcross && \
-    git checkout 310196974007fc916f9be1877731b716a4854f72 && \
+    git checkout 3451b2dbe46144bbc012067a346448689242a799 && \
     ln -s /root/files/MacOSX${OSX_SDK}.sdk.tar.xz /root/osxcross/tarballs && \
     export UNATTENDED=1 && \
     export SDK_VERSION=${OSX_SDK} && \

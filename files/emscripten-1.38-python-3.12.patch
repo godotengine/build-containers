@@ -1,0 +1,25 @@
+diff -aur emscripten/tools/shared.py emscripten_patched/tools/shared.py
+--- emscripten/tools/shared.py  2019-10-11 07:27:44.000000000 +0000
++++ emscripten_patched/tools/shared.py  2025-11-26 16:48:03.290611797 +0000
+@@ -5,7 +5,7 @@
+ 
+ from __future__ import print_function
+ 
+-from distutils.spawn import find_executable
++from shutil import which
+ from subprocess import PIPE, STDOUT
+ import atexit
+ import base64
+@@ -200,10 +200,10 @@
+   config_file = '\n'.join(config_file)
+   # autodetect some default paths
+   config_file = config_file.replace('\'{{{ EMSCRIPTEN_ROOT }}}\'', repr(__rootpath__))
+-  llvm_root = os.path.dirname(find_executable('llvm-dis') or '/usr/bin/llvm-dis')
++  llvm_root = os.path.dirname(which('llvm-dis') or '/usr/bin/llvm-dis')
+   config_file = config_file.replace('\'{{{ LLVM_ROOT }}}\'', repr(llvm_root))
+ 
+-  node = find_executable('nodejs') or find_executable('node') or 'node'
++  node = which('nodejs') or which('node') or 'node'
+   config_file = config_file.replace('\'{{{ NODE }}}\'', repr(node))
+ 
+   abspath = os.path.abspath(os.path.expanduser(path))
