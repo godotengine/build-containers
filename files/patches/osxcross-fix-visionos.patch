@@ -1,5 +1,24 @@
+ build.sh                              |   2 +
+ build_clang.sh                        |   9 ++
+ build_compiler_rt.sh                  |  10 ++
+ patches/xros-availability-clang.patch | 279 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 300 insertions(+)
+
+diff --git a/build.sh b/build.sh
+index 20f596d..38e4d06 100755
+--- a/build.sh
++++ b/build.sh
+@@ -68,6 +68,8 @@ case $SDK_VERSION in
+   26|26.0*) TARGET=darwin25;   SUPPORTED_ARCHS="arm64 arm64e x86_64 x86_64h"; NEED_TAPI_SUPPORT=1; OSX_VERSION_MIN_INT=10.13 ;;
+   26.1*) TARGET=darwin25.1;   SUPPORTED_ARCHS="arm64 arm64e x86_64 x86_64h"; NEED_TAPI_SUPPORT=1; OSX_VERSION_MIN_INT=10.13 ;;
+   26.2*) TARGET=darwin25.2;   SUPPORTED_ARCHS="arm64 arm64e x86_64 x86_64h"; NEED_TAPI_SUPPORT=1; OSX_VERSION_MIN_INT=10.13 ;;
++  26.3*) TARGET=darwin25.3;   SUPPORTED_ARCHS="arm64 arm64e x86_64 x86_64h"; NEED_TAPI_SUPPORT=1; OSX_VERSION_MIN_INT=10.13 ;;
++  26.4*) TARGET=darwin25.4;   SUPPORTED_ARCHS="arm64 arm64e x86_64 x86_64h"; NEED_TAPI_SUPPORT=1; OSX_VERSION_MIN_INT=10.13 ;;
+   *) echo "Unsupported SDK"; exit 1 ;;
+ esac
+
 diff --git a/build_clang.sh b/build_clang.sh
-index 0d9c36b..57d967e 100755
+index 68c25d0..183789f 100755
 --- a/build_clang.sh
 +++ b/build_clang.sh
 @@ -149,6 +149,15 @@ if [ $GITPROJECT == "apple" ]; then
@@ -17,14 +36,14 @@ index 0d9c36b..57d967e 100755
 +
    popd &>/dev/null
  fi
- 
+
 diff --git a/build_compiler_rt.sh b/build_compiler_rt.sh
-index da64909..feb9990 100755
+index 5ce8697..1611faf 100755
 --- a/build_compiler_rt.sh
 +++ b/build_compiler_rt.sh
-@@ -98,6 +98,16 @@ fi
+@@ -99,6 +99,16 @@ fi
  get_sources https://github.com/llvm/llvm-project.git $BRANCH "compiler-rt"
- 
+
  if [ $f_res -eq 1 ]; then
 +  if [ $(osxcross-cmp $CLANG_VERSION ">=" 19.0) -eq 1 ]; then
 +    pushd "$CURRENT_BUILD_PROJECT_NAME"
@@ -37,82 +56,290 @@ index da64909..feb9990 100755
 +  fi
 +
    pushd "$CURRENT_BUILD_PROJECT_NAME/compiler-rt" &>/dev/null
- 
+
    if [ $(osxcross-cmp $SDK_VERSION "<=" 10.11) -eq 1 ]; then
 diff --git a/patches/xros-availability-clang.patch b/patches/xros-availability-clang.patch
 new file mode 100644
-index 0000000..2666a18
+index 0000000..8638c7c
 --- /dev/null
 +++ b/patches/xros-availability-clang.patch
-@@ -0,0 +1,71 @@
-+diff --git a/clang/include/clang/Basic/DarwinSDKInfo.h b/clang/include/clang/Basic/DarwinSDKInfo.h
-+index db20b968a..33b36f53c 100644
-+--- a/clang/include/clang/Basic/DarwinSDKInfo.h
-++++ b/clang/include/clang/Basic/DarwinSDKInfo.h
-+@@ -72,6 +72,13 @@ public:
-+                        llvm::Triple::TvOS, llvm::Triple::UnknownEnvironment);
-+     }
-+ 
-++    /// Returns the os-environment mapping pair that's used to represent the
-++    /// iOS -> visionOS version mapping.
-++    static inline constexpr OSEnvPair iOStoXROSPair() {
-++      return OSEnvPair(llvm::Triple::IOS, llvm::Triple::UnknownEnvironment,
-++                       llvm::Triple::XROS, llvm::Triple::UnknownEnvironment);
-++    }
-++
-+   private:
-+     StorageType Value;
-+ 
+@@ -0,0 +1,279 @@
 +diff --git a/clang/lib/Sema/SemaDeclAttr.cpp b/clang/lib/Sema/SemaDeclAttr.cpp
-+index e2eada24f..26290b3ba 100644
++index 79f3a0ca29e81..b881e43f83601 100644
 +--- a/clang/lib/Sema/SemaDeclAttr.cpp
 ++++ b/clang/lib/Sema/SemaDeclAttr.cpp
-+@@ -2415,6 +2415,48 @@ static void handleAvailabilityAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
-+       auto NewDeprecated = AdjustTvOSVersion(Deprecated.Version);
-+       auto NewObsoleted = AdjustTvOSVersion(Obsoleted.Version);
-+ 
++@@ -2484,6 +2484,80 @@ static void handleFeatureAvailabilityAttr(Sema &S, Decl *D,
++                                               IsUnavailable, AL));
++ }
++
+++/// Returns true if the given availability attribute should be inferred, and
+++/// adjusts the value of the attribute as necessary to facilitate that.
+++static bool shouldInferAvailabilityAttribute(const ParsedAttr &AL,
+++                                             IdentifierInfo *&II,
+++                                             bool &IsUnavailable,
+++                                             VersionTuple &Introduced,
+++                                             VersionTuple &Deprecated,
+++                                             VersionTuple &Obsolete, Sema &S) {
+++  const llvm::Triple &TT = S.Context.getTargetInfo().getTriple();
+++  const ASTContext &Context = S.Context;
+++  if (TT.getOS() != llvm::Triple::XROS)
+++    return false;
+++  IdentifierInfo *NewII = nullptr;
+++  if (II->getName() == "ios")
+++    NewII = &Context.Idents.get("xros");
+++  else if (II->getName() == "ios_app_extension")
+++    NewII = &Context.Idents.get("xros_app_extension");
+++  if (!NewII)
+++    return false;
+++  II = NewII;
+++
+++  auto MakeUnavailable = [&]() {
+++    IsUnavailable = true;
+++    // Reset introduced, deprecated, obsoleted.
+++    Introduced = VersionTuple();
+++    Deprecated = VersionTuple();
+++    Obsolete = VersionTuple();
+++  };
+++
+++  const DarwinSDKInfo *SDKInfo = S.getDarwinSDKInfoForAvailabilityChecking(
+++      AL.getRange().getBegin(), "ios");
+++
+++  if (!SDKInfo) {
+++    MakeUnavailable();
+++    return true;
+++  }
+++  // Map from the fallback platform availability to the current platform
+++  // availability.
+++  const auto *Mapping = SDKInfo->getVersionMapping(DarwinSDKInfo::OSEnvPair(
+++      llvm::Triple::IOS, llvm::Triple::UnknownEnvironment, llvm::Triple::XROS,
+++      llvm::Triple::UnknownEnvironment));
+++  if (!Mapping) {
+++    MakeUnavailable();
+++    return true;
+++  }
+++
+++  if (!Introduced.empty()) {
+++    auto NewIntroduced = Mapping->mapIntroducedAvailabilityVersion(Introduced);
+++    if (!NewIntroduced) {
+++      MakeUnavailable();
+++      return true;
+++    }
+++    Introduced = *NewIntroduced;
+++  }
+++
+++  if (!Obsolete.empty()) {
+++    auto NewObsolete =
+++        Mapping->mapDeprecatedObsoletedAvailabilityVersion(Obsolete);
+++    if (!NewObsolete) {
+++      MakeUnavailable();
+++      return true;
+++    }
+++    Obsolete = *NewObsolete;
+++  }
+++
+++  if (!Deprecated.empty()) {
+++    auto NewDeprecated =
+++        Mapping->mapDeprecatedObsoletedAvailabilityVersion(Deprecated);
+++    Deprecated = NewDeprecated ? *NewDeprecated : VersionTuple();
+++  }
+++
+++  return true;
+++}
+++
++ static void handleAvailabilityAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
++   if (!AL.isAvailabilityAttribute()) {
++     handleFeatureAvailabilityAttr(S, D, AL);
++@@ -2601,6 +2675,25 @@ static void handleAvailabilityAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
++   if (NewAttr)
++     D->addAttr(NewAttr);
++
+++  if (S.Context.getTargetInfo().getTriple().getOS() == llvm::Triple::XROS) {
+++    IdentifierInfo *NewII = II;
+++    bool NewIsUnavailable = IsUnavailable;
+++    VersionTuple NewIntroduced = Introduced.Version;
+++    VersionTuple NewDeprecated = Deprecated.Version;
+++    VersionTuple NewObsoleted = Obsoleted.Version;
+++    if (shouldInferAvailabilityAttribute(AL, NewII, NewIsUnavailable,
+++                                         NewIntroduced, NewDeprecated,
+++                                         NewObsoleted, S)) {
 ++      AvailabilityAttr *NewAttr = S.mergeAvailabilityAttr(
 ++          ND, AL, NewII, true /*Implicit*/, NewIntroduced, NewDeprecated,
-++          NewObsoleted, IsUnavailable, Str, IsStrict, Replacement,
-++          Sema::AMK_None, PriorityModifier + Sema::AP_InferredFromOtherPlatform,
-++          IIEnvironment);
+++          NewObsoleted, NewIsUnavailable, Str, IsStrict, Replacement,
+++          Sema::AMK_None,
+++          PriorityModifier + Sema::AP_InferredFromOtherPlatform, IIEnvironment);
 ++      if (NewAttr)
 ++        D->addAttr(NewAttr);
 ++    }
-++  } else if (S.Context.getTargetInfo().getTriple().isXROS()) {
-++    // Transcribe "ios" to "visionos" (and add a new attribute) if the versioning
-++    // matches before the start of the visionOS platform.
-++    IdentifierInfo *NewII = nullptr;
-++    if (II->getName() == "ios")
-++      NewII = &S.Context.Idents.get("xros");
-++    else if (II->getName() == "ios_app_extension")
-++      NewII = &S.Context.Idents.get("xros_app_extension");
+++  }
 ++
-++    if (NewII) {
-++      const auto *SDKInfo = S.getDarwinSDKInfoForAvailabilityChecking();
-++      const auto *IOSToXROSMapping =
-++          SDKInfo ? SDKInfo->getVersionMapping(
-++                        DarwinSDKInfo::OSEnvPair::iOStoXROSPair())
-++                  : nullptr;
++   // Transcribe "ios" to "watchos" (and add a new attribute) if the versioning
++   // matches before the start of the watchOS platform.
++   if (S.Context.getTargetInfo().getTriple().isWatchOS()) {
++diff --git a/clang/test/PlatformSpecific/xrOS/Sema/Inputs/XROS.sdk/SDKSettings.json b/clang/test/PlatformSpecific/xrOS/Sema/Inputs/XROS.sdk/SDKSettings.json
++new file mode 100644
++index 0000000000000..e4f7c87519805
++--- /dev/null
+++++ b/clang/test/PlatformSpecific/xrOS/Sema/Inputs/XROS.sdk/SDKSettings.json
++@@ -0,0 +1,21 @@
+++{
+++  "DefaultVariant": "xrOS", "DisplayName": "xrOS",
+++  "Version": "1.0",
+++  "CanonicalName": "xros1.0",
+++  "MaximumDeploymentTarget": "1.0.99",
+++  "SupportedTargets": {
+++    "xros": {
+++      "Archs": ["arm64e", "arm64"],
+++      "LLVMTargetTripleVendor": "apple",
+++      "LLVMTargetTripleSys": "xros",
+++      "LLVMTargetTripleEnvironment": "",
+++      "SystemPrefix": ""
+++    }
+++  },
+++  "VersionMap": {
+++    "iOS_visionOS": {"17.1": "1.0"},
+++    "iOS_xrOS": {"17.1": "1.0"},
+++    "visionOS_iOS": {"1.0": "17.1"},
+++    "xrOS_iOS": {"1.0": "17.1"}
+++  }
+++}
++diff --git a/clang/test/PlatformSpecific/xrOS/Sema/infer-ios-availability.c b/clang/test/PlatformSpecific/xrOS/Sema/infer-ios-availability.c
++new file mode 100644
++index 0000000000000..76be32370e745
++--- /dev/null
+++++ b/clang/test/PlatformSpecific/xrOS/Sema/infer-ios-availability.c
++@@ -0,0 +1,117 @@
+++// RUN: %clang_cc1 -triple arm64-apple-xros1 -verify=ios -isysroot %S/Inputs/XROS.sdk %s 2>&1
+++// RUN: %clang_cc1 -triple arm64-apple-xros1 -fapplication-extension -verify=ios,ext -isysroot %S/Inputs/XROS.sdk %s 2>&1
 ++
-++      auto AdjustTvOSVersion =
-++          [IOSToXROSMapping](VersionTuple Version) -> VersionTuple {
-++        if (Version.empty())
-++          return Version;
+++// RUN: %clang_cc1 -triple arm64-apple-xros2 -DXROS2 -verify=ios -isysroot %S/Inputs/XROS.sdk  %s 2>&1
 ++
-++        if (IOSToXROSMapping) {
-++          if (auto MappedVersion = IOSToXROSMapping->map(
-++                  Version, VersionTuple(1, 0), std::nullopt)) {
-++            return *MappedVersion;
-++          }
-++        }
-++        return Version;
-++      };
+++__attribute__((availability(ios, unavailable)))
+++void ios_unavail(); // ios-note {{}}
 ++
-++      auto NewIntroduced = AdjustTvOSVersion(Introduced.Version);
-++      auto NewDeprecated = AdjustTvOSVersion(Deprecated.Version);
-++      auto NewObsoleted = AdjustTvOSVersion(Obsoleted.Version);
+++__attribute__((availability(ios_app_extension, unavailable)))
+++void ios_ext_unavail(); // ext-note {{}}
 ++
-+       AvailabilityAttr *NewAttr = S.mergeAvailabilityAttr(
-+           ND, AL, NewII, true /*Implicit*/, NewIntroduced, NewDeprecated,
-+           NewObsoleted, IsUnavailable, Str, IsStrict, Replacement,
+++void use() {
+++  ios_unavail(); // ios-error {{'ios_unavail' is unavailable: not available on }}
+++  ios_ext_unavail(); // ext-error {{'ios_ext_unavail' is unavailable: not available on }}
+++}
+++
+++__attribute__((availability(ios, introduced=10)))
+++void ios_introduced_10();
+++
+++__attribute__((availability(ios_app_extension, introduced=10)))
+++void ios_ext_introduced_10();
+++
+++__attribute__((availability(ios, introduced=17.1)))
+++void ios_introduced_17();
+++
+++__attribute__((availability(ios_app_extension, introduced=17.1)))
+++void ios_ext_introduced_17();
+++
+++__attribute__((availability(ios, introduced=18)))
+++void ios_introduced_18(); // ios-note {{}}
+++
+++__attribute__((availability(ios_app_extension, introduced=18)))
+++void ios_ext_introduced_18(); // ext-note {{}}
+++
+++void useIntroduced() {
+++  // introduced iOS < 10 => introduced xrOS 1
+++  ios_introduced_10();
+++  ios_ext_introduced_10();
+++  // introduced iOS 17.1 => introduced xrOS 1
+++  ios_introduced_17();
+++  ios_ext_introduced_17();
+++  // introduced iOS 18 => xros unavailable (no mapping)
+++  ios_introduced_18(); // ios-error {{is unavailable: not available on }}
+++  ios_ext_introduced_18(); // ext-error {{is unavailable: not available on }}
+++}
+++
+++__attribute__((availability(ios, deprecated=10)))
+++void ios_deprecated_10(); // ios-note {{}}
+++
+++__attribute__((availability(ios_app_extension, deprecated=10)))
+++void ios_ext_deprecated_10(); // ext-note {{}}
+++
+++__attribute__((availability(ios, deprecated=17.1)))
+++void ios_deprecated_17(); // ios-note {{}}
+++
+++__attribute__((availability(ios_app_extension, deprecated=17.1)))
+++void ios_ext_deprecated_17(); // ext-note {{}}
+++
+++__attribute__((availability(ios, deprecated=18)))
+++void ios_deprecated_18();
+++#ifdef XROS2
+++// ios-note@-2 {{}}
+++#endif
+++
+++__attribute__((availability(ios_app_extension, deprecated=18)))
+++void ios_ext_deprecated_18();
+++
+++void useDeprecated() {
+++  // deprecated iOS < 10 => deprecated xrOS 1
+++  ios_deprecated_10(); // ios-warning {{is deprecated: first deprecated in}}
+++  ios_ext_deprecated_10(); // ext-warning {{is deprecated: first deprecated in}}
+++  // deprecated iOS 17.1 => deprecated xrOS 1
+++  ios_deprecated_17(); // ios-warning {{is deprecated: first deprecated in}}
+++  ios_ext_deprecated_17(); // ext-warning {{is deprecated: first deprecated in}}
+++  // deprecated iOS 18 => deprecated xrOS 1.0.99
+++  ios_deprecated_18();
+++#ifdef XROS2
+++  // ios-warning@-2 {{is deprecated: first deprecated in}}
+++#endif
+++  ios_ext_deprecated_18();
+++}
+++
+++__attribute__((availability(ios, obsoleted=10)))
+++void ios_obsoleted_10(); // ios-note {{}}
+++
+++__attribute__((availability(ios_app_extension, obsoleted=10)))
+++void ios_ext_obsoleted_10(); // ext-note {{}}
+++
+++__attribute__((availability(ios, obsoleted=17.1)))
+++void ios_obsoleted_17(); // ios-note {{}}
+++
+++__attribute__((availability(ios_app_extension, obsoleted=17.1)))
+++void ios_ext_obsoleted_17(); // ext-note {{}}
+++
+++__attribute__((availability(ios, obsoleted=18)))
+++void ios_obsoleted_18();
+++#ifdef XROS2
+++// ios-note@-2 {{}}
+++#endif
+++
+++__attribute__((availability(ios_app_extension, obsoleted=18)))
+++void ios_ext_obsoleted_18();
+++
+++void useObsoleted() {
+++  // deprecated iOS < 10 => deprecated xrOS 1
+++  ios_obsoleted_10(); // ios-error {{is unavailable: obsoleted in}}
+++  ios_ext_obsoleted_10(); // ext-error {{is unavailable: obsoleted in}}
+++  // deprecated iOS 17.1 => deprecated xrOS 1
+++  ios_obsoleted_17(); // ios-error {{is unavailable: obsoleted in}}
+++  ios_ext_obsoleted_17(); // ext-error {{is unavailable: obsoleted in}}
+++  // obsoleted iOS 18 => obsoleted xrOS 1.0.99
+++  ios_obsoleted_18();
+++#ifdef XROS2
+++  // ios-error@-2 {{is unavailable: obsoleted in}}
+++#endif
+++  ios_ext_obsoleted_18();
+++}
++diff --git a/clang/test/PlatformSpecific/xrOS/Sema/infer-unavailable-from-missing-ios-availability-mapping.c b/clang/test/PlatformSpecific/xrOS/Sema/infer-unavailable-from-missing-ios-availability-mapping.c
++new file mode 100644
++index 0000000000000..2645b487ffd72
++--- /dev/null
+++++ b/clang/test/PlatformSpecific/xrOS/Sema/infer-unavailable-from-missing-ios-availability-mapping.c
++@@ -0,0 +1,12 @@
+++// RUN: %clang_cc1 -triple arm64-apple-xros1 -verify=ios -DNOSDK %s 2>&1
+++// RUN: %clang_cc1 -triple arm64-apple-xros1 -verify=ios -isysroot %S/Inputs/XROS.sdk %s 2>&1
+++
+++#ifdef NOSDK
+++// ios-warning@+2 {{ios availability is ignored without a valid 'SDKSettings.json' in the SDK}}
+++#endif
+++__attribute__((availability(ios, introduced=18))) // note the version introduced has to be higher than the versions in SDKSettings
+++void ios_introduced_10(); // ios-note {{}}
+++
+++void useIntroduced() {
+++  ios_introduced_10(); // ios-error {{is unavailable: not available on }}
+++}

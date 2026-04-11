@@ -5,15 +5,16 @@ FROM godot-fedora:${img_version}
 #
 # sudo dnf install gnupg2
 
-ENV XCODE_SDKV=26.1.1
-ENV APPLE_SDKV=26.1
+ENV XCODE_SDKV=26.4
+ENV APPLE_SDKV=26.4
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       automake autoconf bzip2-devel cmake gawk gcc gcc-c++ libdispatch libicu-devel libtool \
       libxml2-devel openssl-devel uuid-devel yasm gpg && \
     git clone --progress https://github.com/tpoechtrager/osxcross && \
     cd /root/osxcross && \
-    git checkout 121ce150c7857a9474dfff8a8e431482806b3e1b && \
+    # latest commit from main branch
+    git checkout e6ab3fa7423f9235ce9ed6381d6d3af191b46b59 && \
     # Patch to fix visionOS support.
     # See: https://github.com/llvm/llvm-project/issues/142502
     patch -p1 < /root/files/patches/osxcross-fix-visionos.patch && \
@@ -31,7 +32,7 @@ RUN dnf -y install --setopt=install_weak_deps=False \
 ENV OSXCROSS_ROOT=/root/osxcross
 ENV PATH="/root/osxcross/target/bin:${PATH}"
 
-# Install Swift 6.2 toolchain
+# Install latest Swift toolchain
 
 RUN mkdir -p /root/Xcode.app/Contents/Developer
 RUN cd /root/Xcode.app/Contents/Developer && tar xf /root/files/Xcode-Developer${XCODE_SDKV}.tar.xz --strip-components=1

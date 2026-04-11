@@ -37,4 +37,13 @@ ENV OSXCROSS_APPLEEMBEDDED=not_nothing
 
 ENV PATH="/root/ioscross/arm64/bin:/root/ioscross/x86_64/bin:${PATH}"
 
+# Patch the visionOS SDK in place so it can be consumed by the swift.org
+# 6.3 release compiler. See files/appleembedded/patch-visionos-sdk.sh for
+# the per-category rationale and upstream-fix pointers.
+COPY files/appleembedded/patch-visionos-sdk.sh /root/patch-visionos-sdk.sh
+RUN chmod +x /root/patch-visionos-sdk.sh && \
+    . "${SWIFTLY_HOME_DIR:-$HOME/.local/share/swiftly}/env.sh" && \
+    /root/patch-visionos-sdk.sh && \
+    rm /root/patch-visionos-sdk.sh
+
 CMD /bin/bash

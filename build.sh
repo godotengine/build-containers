@@ -58,8 +58,8 @@ podman_build windows
 podman_build web
 podman_build android
 
-XCODE_SDK=26.1.1
-APPLE_SDKV=26.1
+XCODE_SDK=26.4
+APPLE_SDKV=26.4
 if [ ! -e "${files_root}"/MacOSX${APPLE_SDKV}.sdk.tar.xz ] || [ ! -e "${files_root}"/Xcode-Developer${XCODE_SDK}.tar.xz ]; then
   if [ ! -r "${files_root}"/Xcode_${XCODE_SDK}.xip ]; then
     echo
