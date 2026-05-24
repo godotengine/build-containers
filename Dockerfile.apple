@@ -14,7 +14,7 @@
 #
 # Key simplifications from the existing osx + appleembedded pair:
 #
-#   * No custom Apple-clang build. swiftly's Swift 6.3.0 clang is the
+#   * No custom Apple-clang build. swiftly's Swift 6.3.x clang is the
 #     single compiler for C / Obj-C / Obj-C++ / Swift.
 #   * No custom compiler-rt build. Xcode ships `libclang_rt.{osx,ios,
 #     tvos,xros,…}.a` inside its toolchain and we link against those.
@@ -31,9 +31,9 @@
 ARG img_version
 FROM godot-fedora:${img_version}
 
-ENV XCODE_SDKV=26.4
-ENV APPLE_SDKV=26.4
-ENV SWIFT_VERSION=6.3.0
+ENV XCODE_SDKV=26.5
+ENV APPLE_SDKV=26.5
+ENV SWIFT_VERSION=6.3.2
 
 # -----------------------------------------------------------------------------
 # osxcross cctools-port — binutils only (lipo, otool, ar, ranlib, …)
@@ -44,8 +44,8 @@ ENV SWIFT_VERSION=6.3.0
 # libtapi + cctools-port + the `*-apple-darwin25.4-*` wrappers. Built with
 # the system (Fedora) clang as CC.
 #
-# `osxcross-add-sdk-26.4.patch` adds `darwin25.3` / `darwin25.4` target
-# mappings to osxcross's `build.sh` so `SDK_VERSION=26.4 ./build.sh`
+# `osxcross-add-sdk-26.patch` adds `darwin25.x` target
+# mappings to osxcross's `build.sh` so `SDK_VERSION=26.5 ./build.sh`
 # recognizes the SDK.
 
 RUN dnf -y install --setopt=install_weak_deps=False \
@@ -55,7 +55,7 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     cd /root/osxcross && \
     # Latest commit from main branch (matches Dockerfile.osx).
     git checkout e6ab3fa7423f9235ce9ed6381d6d3af191b46b59 && \
-    patch -p1 < /root/files/patches/osxcross-add-sdk-26.4.patch && \
+    patch -p1 < /root/files/patches/osxcross-add-sdk-26.patch && \
     ln -s /root/files/MacOSX${APPLE_SDKV}.sdk.tar.xz /root/osxcross/tarballs && \
     UNATTENDED=1 SDK_VERSION=${APPLE_SDKV} ./build.sh && \
     rm -rf /root/osxcross/build
