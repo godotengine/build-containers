@@ -26,6 +26,21 @@ fi
 
 echo "patch-visionos-sdk: patching $SDK"
 
+# Several patches below work around open-source-Swift bugs that are fixed in
+# Swift 6.4+. cat3a/cat3b remain required (RealityFoundation
+# C++-interop divergences). Gate cat1/cat2/cat3c on the compiler version.
+#
+# NOTE: These will be removed once Swift 6.4 is released, but remain for now
+SWIFT_MM="$(swift --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)"
+APPLE_FIXED=0
+if [ -n "$SWIFT_MM" ]; then
+    _maj="${SWIFT_MM%%.*}"; _min="${SWIFT_MM#*.}"
+    if [ "$_maj" -gt 6 ] || { [ "$_maj" -eq 6 ] && [ "$_min" -ge 4 ]; }; then
+        APPLE_FIXED=1
+        echo "patch-visionos-sdk: Swift ${SWIFT_MM} detected (>=6.4); applying cat3a/cat3b only (cat1/cat2/cat3c fixed upstream)"
+    fi
+fi
+
 ###############################################################################
 # cat1: visionOS availability inference for Obj-C headers.
 #
@@ -36,6 +51,7 @@ echo "patch-visionos-sdk: patching $SDK"
 #
 # Upstream fix: swiftlang/llvm-project#11866 (targets swift/release/6.3).
 ###############################################################################
+if [ "$APPLE_FIXED" -eq 0 ]; then
 echo "patch-visionos-sdk: cat1 - adding visionos to API_UNAVAILABLE in headers"
 python3 - "$SDK/System/Library/Frameworks" <<'PY'
 import os, re, sys
@@ -72,6 +88,7 @@ for dp, _, files in os.walk(root):
                 ch_calls += real
 print(f"  patched {ch_calls} calls in {ch_files} files")
 PY
+fi
 
 ###############################################################################
 # cat2: swift-compiler-version stamp in .swiftinterface files.
@@ -85,6 +102,7 @@ PY
 # No upstream fix planned; this is fundamental to how Apple's release
 # pipeline diverges from swift.org.
 ###############################################################################
+if [ "$APPLE_FIXED" -eq 0 ]; then
 echo "patch-visionos-sdk: cat2 - rewriting swift-compiler-version stamp in .swiftinterface"
 # Try to resolve the OSS compiler's own stamp; fall back to the 6.3 release
 # string if swift isn't in PATH at image-build time.
@@ -119,6 +137,7 @@ for dp, _, files in os.walk(root):
                 pass
 print(f"  rewrote stamp in {ch} .swiftinterface files")
 PY
+fi
 
 ###############################################################################
 # cat3a: gut `@inlinable` bodies in RealityFoundation.swiftinterface that
@@ -231,6 +250,7 @@ fi
 # with raw-value initializers - they're valid regardless of how the compiler
 # names the cases.
 ###############################################################################
+if [ "$APPLE_FIXED" -eq 0 ]; then
 RK_IFACE="$SDK/System/Library/Frameworks/RealityKit.framework/Modules/RealityKit.swiftmodule/arm64e-apple-xros.swiftinterface"
 if [ -f "$RK_IFACE" ]; then
     echo "patch-visionos-sdk: cat3c - replacing CT enum defaults in RealityKit.swiftinterface"
@@ -240,6 +260,7 @@ if [ -f "$RK_IFACE" ]; then
         "$RK_IFACE"
 else
     echo "patch-visionos-sdk: cat3c - RealityKit.swiftinterface not found, skipping"
+fi
 fi
 
 echo "patch-visionos-sdk: done"
