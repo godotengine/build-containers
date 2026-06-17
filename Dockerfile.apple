@@ -27,16 +27,32 @@
 #
 # What's retained from osxcross: cctools-port binutils (lipo, otool, ar)
 # for universal-binary assembly and Mach-O introspection.
-
-ARG img_version
-FROM godot-fedora:${img_version}
-
-ENV XCODE_SDKV=26.5
-ENV APPLE_SDKV=26.5
-ENV SWIFT_VERSION=6.3.2
+#
+# -----------------------------------------------------------------------------
+# Build stages
+# -----------------------------------------------------------------------------
+#
+# This image is split into named, cumulative stages so individual phases
+# can be built and inspected in isolation:
+#
+#   osxcross   -> cctools-port binutils
+#   xcode-tree -> Xcode Developer tree (SDKs + Toolchains)
+#   swift      -> swiftly Swift toolchain
+#   final      -> darwin-tools, PATH, Swift SDK bundle, detect.py gates,
+#                 ioscross shims, visionOS SDK patch
+#
+# Each stage is `FROM` the previous one, so layers (and ENV/PATH) are
+# shared — there's no extra storage cost versus a single-stage build.
+#
+# Build everything (default = last stage, `final`), tagged godot-apple:
+#   podman build --build-arg img_version=<v> -t godot-apple:<v> -f Dockerfile.apple .
+#
+# Build/inspect an intermediate phase:
+#   podman build --build-arg img_version=<v> --target swift \
+#     -t godot-apple-swift:<v> -f Dockerfile.apple .
 
 # -----------------------------------------------------------------------------
-# osxcross cctools-port — binutils only (lipo, otool, ar, ranlib, …)
+# Stage: osxcross — cctools-port binutils (lipo, otool, ar, ranlib, …)
 # -----------------------------------------------------------------------------
 #
 # We skip `build_apple_clang.sh` (no Apple clang) and `build_compiler_rt.sh`
@@ -47,6 +63,11 @@ ENV SWIFT_VERSION=6.3.2
 # `osxcross-add-sdk-26.patch` adds `darwin25.x` target
 # mappings to osxcross's `build.sh` so `SDK_VERSION=26.5 ./build.sh`
 # recognizes the SDK.
+
+ARG img_version
+FROM godot-fedora:${img_version} AS osxcross
+
+ENV APPLE_SDKV=26.5
 
 RUN dnf -y install --setopt=install_weak_deps=False \
       automake autoconf bzip2-devel clang cmake gawk gcc gcc-c++ libdispatch libicu-devel \
@@ -63,7 +84,7 @@ RUN dnf -y install --setopt=install_weak_deps=False \
 ENV OSXCROSS_ROOT=/root/osxcross
 
 # -----------------------------------------------------------------------------
-# Xcode Developer tree (SDKs + Toolchains from Xcode.xip)
+# Stage: xcode-tree — Xcode Developer tree (SDKs + Toolchains from Xcode.xip)
 # -----------------------------------------------------------------------------
 #
 # Provides:
@@ -75,12 +96,16 @@ ENV OSXCROSS_ROOT=/root/osxcross
 #     (libclang_rt.osx.a, libclang_rt.ios.a, libclang_rt.tvos.a,
 #     libclang_rt.xros.a, …)
 
+FROM osxcross AS xcode-tree
+
+ENV XCODE_SDKV=26.5
+
 RUN mkdir -p /root/Xcode.app/Contents/Developer && \
     cd /root/Xcode.app/Contents/Developer && \
     tar xf /root/files/Xcode-Developer${XCODE_SDKV}.tar.xz --strip-components=1
 
 # -----------------------------------------------------------------------------
-# Swift toolchain — swiftly
+# Stage: swift — Swift toolchain via swiftly
 # -----------------------------------------------------------------------------
 #
 # Installs to /root/.local/share/swiftly/toolchains/${SWIFT_VERSION}/usr/bin/,
@@ -91,12 +116,22 @@ RUN mkdir -p /root/Xcode.app/Contents/Developer && \
 # platform support, so it cannot be used to link Mach-O. We use
 # darwin-tools-linux-llvm's ld64.lld instead (next step).
 
+FROM xcode-tree AS swift
+
+ENV SWIFT_VERSION=6.3.2
+
 RUN curl -O https://download.swift.org/swiftly/linux/swiftly-$(uname -m).tar.gz && \
     tar zxf swiftly-$(uname -m).tar.gz && \
     ./swiftly init --platform ubi9 --quiet-shell-followup --skip-install -y && \
     ~/.local/share/swiftly/bin/swiftly install ${SWIFT_VERSION} && \
     . "${SWIFTLY_HOME_DIR:-$HOME/.local/share/swiftly}/env.sh" && \
     hash -r
+
+# -----------------------------------------------------------------------------
+# Stage: final — darwin-tools, PATH, SDK bundle, detect gates, shims, patches
+# -----------------------------------------------------------------------------
+
+FROM swift AS final
 
 # -----------------------------------------------------------------------------
 # darwin-tools-linux-llvm — Apple-platform-enabled ld64.lld
