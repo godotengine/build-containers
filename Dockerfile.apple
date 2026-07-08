@@ -120,7 +120,7 @@ FROM xcode-tree AS swift
 
 # Swift toolchain version: the swiftly identifier, which is also the installed
 # toolchain directory name that build-<platform>/build.sh composes into
-# SWIFT_FRONTEND. Override to build an experimental image, e.g.
+# SWIFT_COMPILER. Override to build an experimental image, e.g.
 #   --build-arg swift_version=6.4.x-snapshot-2026-06-11
 # The default tracks the production release.
 ARG swift_version=6.3.2
