@@ -1,0 +1,5 @@
+# Normalize EOL for all files that Git considers text files.
+* text=auto eol=lf
+
+# Properly detect languages on Github.
+Dockerfile.* linguist-language=Dockerfile
