@@ -186,6 +186,19 @@ RUN mkdir -p /opt/darwin-tools && \
 
 ENV PATH="/opt/darwin-tools/bin:/root/.local/share/swiftly/bin:/root/osxcross/target/bin:${PATH}"
 
+# osxcross's macOS compiler wrapper (target/bin/*-apple-darwin25.x-cc) resolves
+# `clang` from PATH to /root/.local/share/swiftly/bin/clang, which is a symlink
+# to the `swiftly` dispatcher. osxcross then finds clang's intrinsic headers and
+# infers its version from `<clang-dir>/../lib/clang/<ver>/`, but
+# the dispatcher's bin/ has no adjacent lib/. Missing it, osxcross warns "cannot
+# find clang intrinsic headers" and — failing version detection — clamps
+# -mmacosx-version-min down to 10.16.
+# Expose the real toolchain lib/ next to the dispatcher so
+# `swiftly/bin/../lib/clang/<ver>` resolves, keeping swiftly's clang as the
+# compiler and PATH order unchanged.
+RUN ln -s /root/.local/share/swiftly/toolchains/${SWIFT_VERSION}/usr/lib \
+          /root/.local/share/swiftly/lib
+
 # -----------------------------------------------------------------------------
 # Swift SDK bundle — for `swift build --swift-sdk darwin-*` workflows.
 # -----------------------------------------------------------------------------
