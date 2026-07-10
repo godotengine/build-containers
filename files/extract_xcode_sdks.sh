@@ -32,8 +32,14 @@ APPLE_SDKV="${APPLE_SDKV:-}"
 if [[ "$EXTRACT_FROM_XIP" == "1" ]]; then
   mkdir -p /root/xcode
   cd /root/xcode
-  xar -xf "$XCODE_XIP_PATH"
+  # Fedora's Apple `xar 1.8` (417.1) fails to open Apple's signed Xcode .xip
+  # ("Error opening xar archive"): the RSA <signature> element in the TOC trips
+  # xar_open. The .xip is still a valid xar, and its "Content" member is stored
+  # uncompressed (application/octet-stream) -- it is exactly the pbzx stream. So
+  # we extract Content directly, bypassing xar, then feed it to pbzx as before.
+  python3 /root/files/xip_extract_content.py "$XCODE_XIP_PATH" Content Content
   /root/pbzx/pbzx -n Content | cpio -i
+  rm -f Content
   XCODE_APP_PATH="/root/xcode/Xcode.app"
 fi
 

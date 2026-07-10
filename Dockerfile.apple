@@ -62,7 +62,7 @@
 #
 # `osxcross-add-sdk-26.patch` adds `darwin25.x` target
 # mappings to osxcross's `build.sh` so `SDK_VERSION=26.5 ./build.sh`
-# recognizes the SDK.
+# recognizes the SDK. (Xcode 26.6 bundles the macOS 26.5 SDK.)
 
 ARG img_version
 FROM godot-fedora:${img_version} AS osxcross
@@ -98,7 +98,7 @@ ENV OSXCROSS_ROOT=/root/osxcross
 
 FROM osxcross AS xcode-tree
 
-ENV XCODE_SDKV=26.5
+ENV XCODE_SDKV=26.6
 
 RUN mkdir -p /root/Xcode.app/Contents/Developer && \
     cd /root/Xcode.app/Contents/Developer && \
