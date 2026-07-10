@@ -174,30 +174,25 @@ RUN mkdir -p /opt/darwin-tools && \
 #      override is `-B /opt/darwin-tools/bin` at link-time, but keeping
 #      this on PATH helps scripts that invoke ld64.lld directly.)
 #
-#   2. /root/.local/share/swiftly/bin — so non-login shells (like
-#      `bash build/build.sh` from scons) find clang/clang++/swift/
-#      llvm-ar/llvm-ranlib without sourcing env.sh.
+#   2. swiftly toolchains/${SWIFT_VERSION}/usr/bin — the REAL toolchain
+#      binaries (clang, clang++, swiftc, swift-frontend, llvm-*). Must come
+#      before swiftly/bin (step 3): those bin/ entries are symlinks to the
+#      `swiftly` dispatcher, a Swift program that boots a libdispatch/Swift-
+#      runtime thread pool per invocation before exec'ing the real tool,
+#      resulting in ~17 threads for each invocation of the dispatcher.
+#      This resulted in a "too many threads" error when scons invoked clang++
+#      for each source file in parallel.
 #
-#   3. /root/osxcross/target/bin LAST — cctools-port binutils
-#      (lipo, otool, *-apple-darwin25.4-ar, etc.).
+#   3. /root/.local/share/swiftly/bin — the swiftly dispatcher, kept on PATH
+#      for the `swiftly` command itself and any tool not present in (2).
+#
+#   4. /root/osxcross/target/bin LAST — cctools-port binutils
+#      (lipo, otool, *-apple-darwin25.x-ar, etc.).
 #
 # Standard /usr/bin comes after those, so any accidental fallback to
 # Fedora's host binutils is unlikely.
 
-ENV PATH="/opt/darwin-tools/bin:/root/.local/share/swiftly/bin:/root/osxcross/target/bin:${PATH}"
-
-# osxcross's macOS compiler wrapper (target/bin/*-apple-darwin25.x-cc) resolves
-# `clang` from PATH to /root/.local/share/swiftly/bin/clang, which is a symlink
-# to the `swiftly` dispatcher. osxcross then finds clang's intrinsic headers and
-# infers its version from `<clang-dir>/../lib/clang/<ver>/`, but
-# the dispatcher's bin/ has no adjacent lib/. Missing it, osxcross warns "cannot
-# find clang intrinsic headers" and — failing version detection — clamps
-# -mmacosx-version-min down to 10.16.
-# Expose the real toolchain lib/ next to the dispatcher so
-# `swiftly/bin/../lib/clang/<ver>` resolves, keeping swiftly's clang as the
-# compiler and PATH order unchanged.
-RUN ln -s /root/.local/share/swiftly/toolchains/${SWIFT_VERSION}/usr/lib \
-          /root/.local/share/swiftly/lib
+ENV PATH="/opt/darwin-tools/bin:/root/.local/share/swiftly/toolchains/${SWIFT_VERSION}/usr/bin:/root/.local/share/swiftly/bin:/root/osxcross/target/bin:${PATH}"
 
 # -----------------------------------------------------------------------------
 # Swift SDK bundle — for `swift build --swift-sdk darwin-*` workflows.

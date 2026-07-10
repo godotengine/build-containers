@@ -1,16 +1,16 @@
- build.sh | 4 ++++
- 1 file changed, 4 insertions(+)
+ build.sh | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/build.sh b/build.sh
 --- a/build.sh	(revision e6ab3fa7423f9235ce9ed6381d6d3af191b46b59)
 +++ b/build.sh	(date 1779656427653)
-@@ -68,5 +68,9 @@
+@@ -68,6 +68,9 @@
    26|26.0*) TARGET=darwin25;   SUPPORTED_ARCHS="arm64 arm64e x86_64 x86_64h"; NEED_TAPI_SUPPORT=1; OSX_VERSION_MIN_INT=10.13 ;;
    26.1*) TARGET=darwin25.1;   SUPPORTED_ARCHS="arm64 arm64e x86_64 x86_64h"; NEED_TAPI_SUPPORT=1; OSX_VERSION_MIN_INT=10.13 ;;
    26.2*) TARGET=darwin25.2;   SUPPORTED_ARCHS="arm64 arm64e x86_64 x86_64h"; NEED_TAPI_SUPPORT=1; OSX_VERSION_MIN_INT=10.13 ;;
 +  26.3*) TARGET=darwin25.3;   SUPPORTED_ARCHS="arm64 arm64e x86_64 x86_64h"; NEED_TAPI_SUPPORT=1; OSX_VERSION_MIN_INT=10.13 ;;
 +  26.4*) TARGET=darwin25.4;   SUPPORTED_ARCHS="arm64 arm64e x86_64 x86_64h"; NEED_TAPI_SUPPORT=1; OSX_VERSION_MIN_INT=10.13 ;;
 +  26.5*) TARGET=darwin25.5;   SUPPORTED_ARCHS="arm64 arm64e x86_64 x86_64h"; NEED_TAPI_SUPPORT=1; OSX_VERSION_MIN_INT=10.13 ;;
-+  26.6*) TARGET=darwin25.6;   SUPPORTED_ARCHS="arm64 arm64e x86_64 x86_64h"; NEED_TAPI_SUPPORT=1; OSX_VERSION_MIN_INT=10.13 ;;
    *) echo "Unsupported SDK"; exit 1 ;;
  esac
+
