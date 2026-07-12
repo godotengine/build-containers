@@ -21,10 +21,9 @@
 #
 # macOS compiles directly with clang using an explicit
 # `-target <arch>-apple-darwin` + `-isysroot ${MACOS_SDK_PATH}` (no osxcross
-# wrappers); see Godot's platform/macos/detect.py. OSXCROSS_ROOT is still
-# exported, but only as the "cross-compiling Apple platforms from Linux"
-# signal that detect.py / setup_swift_builder gate on — there is no osxcross
-# tree in the image.
+# wrappers); see Godot's platform/macos/detect.py. This path is opt-in via the
+# APPLE_LLVM_CROSS env var (set below); osxcross remains available upstream
+# behind OSXCROSS_ROOT, which this image does NOT set (no osxcross tree here).
 #
 # Image-specific values the build scripts consume are exported here as ENV
 # (MACOS_SDK_PATH, EXTRA_LINK_FLAGS) so the scripts don't hardcode paths that
@@ -64,11 +63,11 @@ RUN dnf -y install --setopt=install_weak_deps=False clang llvm && \
     dnf clean all && \
     ln -s /usr/bin/llvm-lipo /usr/local/bin/lipo
 
-# OSXCROSS_ROOT is retained ONLY as the signal that tells Godot's
-# platform/macos/detect.py this is a Linux cross-compile (can_build() and the
-# env["osxcross"] gate). No osxcross toolchain is installed; the value is a
-# sentinel and is never dereferenced as a path.
-ENV OSXCROSS_ROOT=1
+# APPLE_LLVM_CROSS opts Godot's platform/macos/detect.py into the LLVM
+# cross-compile path (clang + -target + Xcode SDK sysroot), as opposed to the
+# osxcross toolchain path (gated separately on OSXCROSS_ROOT, which we do NOT
+# set — no osxcross tree is installed). The value is a non-empty sentinel.
+ENV APPLE_LLVM_CROSS=1
 
 # -----------------------------------------------------------------------------
 # Stage: xcode-tree — Xcode Developer tree (SDKs + Toolchains from Xcode.xip)
