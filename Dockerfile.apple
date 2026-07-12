@@ -2,9 +2,7 @@
 #
 # Consolidated image for Godot's Apple-platform builds from Linux.
 #
-# Produces `godot-apple:${img_version}` and is intended to eventually
-# replace Dockerfile.osx + Dockerfile.appleembedded once validated.
-# For now it exists alongside those images as an experiment.
+# Produces `godot-apple:${img_version}`.
 #
 # Supported build outputs:
 #   * macOS:    executable link (editor, templates) via ld64.lld
@@ -12,37 +10,36 @@
 #   * tvOS:     static libraries (arm64)
 #   * visionOS: static libraries (arm64)
 #
-# Key simplifications from the existing osx + appleembedded pair:
+# Toolchain design (no osxcross):
 #
-#   * No custom Apple-clang build. swiftly's Swift 6.3.x clang is the
-#     single compiler for C / Obj-C / Obj-C++ / Swift.
-#   * No custom compiler-rt build. Xcode ships `libclang_rt.{osx,ios,
-#     tvos,xros,…}.a` inside its toolchain and we link against those.
-#   * No ioscross / cctools-port wrapper chain. iOS/tvOS/visionOS are
-#     static-archive builds — they need clang + llvm-ar, no linker —
-#     so the wrappers are dead weight.
-#   * darwin-tools-linux-llvm's ld64.lld replaces cctools-port ld for
-#     macOS linking. Swiftly's bundled lld has Apple platforms disabled
-#     at build time and cannot be used for Mach-O output.
+#   * swiftly's Swift 6.x clang is the single compiler for
+#     C / Obj-C / Obj-C++ / Swift across all Apple platforms.
+#   * Xcode provides the SDKs and `libclang_rt.{osx,ios,tvos,xros,…}.a`.
+#   * darwin-tools-linux-llvm's ld64.lld links Mach-O (swiftly's bundled
+#     lld has Apple platforms disabled at build time).
+#   * llvm-lipo assembles macOS universal binaries (drop-in for cctools lipo).
 #
-# What's retained from osxcross: cctools-port binutils (lipo, otool, ar)
-# for universal-binary assembly and Mach-O introspection.
+# macOS compiles directly with clang using an explicit
+# `-target <arch>-apple-darwin` + `-isysroot ${MACOS_SDK_PATH}` (no osxcross
+# wrappers); see Godot's platform/macos/detect.py. OSXCROSS_ROOT is still
+# exported, but only as the "cross-compiling Apple platforms from Linux"
+# signal that detect.py / setup_swift_builder gate on — there is no osxcross
+# tree in the image.
+#
+# Image-specific values the build scripts consume are exported here as ENV
+# (MACOS_SDK_PATH, EXTRA_LINK_FLAGS) so the scripts don't hardcode paths that
+# move with the SDK / toolchain version (see PR #159 review).
 #
 # -----------------------------------------------------------------------------
 # Build stages
-# -----------------------------------------------------------------------------
 #
-# This image is split into named, cumulative stages so individual phases
-# can be built and inspected in isolation:
-#
-#   osxcross   -> cctools-port binutils
+#   base       -> Fedora + llvm-lipo, cross-compile signal
 #   xcode-tree -> Xcode Developer tree (SDKs + Toolchains)
 #   swift      -> swiftly Swift toolchain
-#   final      -> darwin-tools, PATH, Swift SDK bundle, detect.py gates,
-#                 ioscross shims, visionOS SDK patch
+#   final      -> darwin-tools, PATH, Swift SDK bundle, ioscross shims,
+#                 visionOS SDK patch, build-script ENV
 #
-# Each stage is `FROM` the previous one, so layers (and ENV/PATH) are
-# shared — there's no extra storage cost versus a single-stage build.
+# Each stage is `FROM` the previous one, so layers (and ENV/PATH) are shared.
 #
 # Build everything (default = last stage, `final`), tagged godot-apple:
 #   podman build --build-arg img_version=<v> -t godot-apple:<v> -f Dockerfile.apple .
@@ -52,36 +49,26 @@
 #     -t godot-apple-swift:<v> -f Dockerfile.apple .
 
 # -----------------------------------------------------------------------------
-# Stage: osxcross — cctools-port binutils (lipo, otool, ar, ranlib, …)
+# Stage: base — Fedora + llvm-lipo for macOS universal-binary assembly
 # -----------------------------------------------------------------------------
 #
-# We skip `build_apple_clang.sh` (no Apple clang) and `build_compiler_rt.sh`
-# (Xcode ships compiler-rt). Just the main `./build.sh` which builds
-# libtapi + cctools-port + the `*-apple-darwin25.4-*` wrappers. Built with
-# the system (Fedora) clang as CC.
-#
-# `osxcross-add-sdk-26.patch` adds `darwin25.x` target
-# mappings to osxcross's `build.sh` so `SDK_VERSION=26.5 ./build.sh`
-# recognizes the SDK. (Xcode 26.6 bundles the macOS 26.5 SDK.)
+# llvm-lipo is a drop-in for cctools `lipo -create`; it links libLLVM.so
+# (pulled in by `llvm`) and is exposed as `lipo` on PATH. `clang` is installed
+# as SCons's bootstrap/default host compiler — the actual Apple compiles use
+# swiftly's clang (earlier on PATH); system clang is never used to compile.
 
 ARG img_version
-FROM godot-fedora:${img_version} AS osxcross
+FROM godot-fedora:${img_version} AS base
 
-ENV APPLE_SDKV=26.5
+RUN dnf -y install --setopt=install_weak_deps=False clang llvm && \
+    dnf clean all && \
+    ln -s /usr/bin/llvm-lipo /usr/local/bin/lipo
 
-RUN dnf -y install --setopt=install_weak_deps=False \
-      automake autoconf bzip2-devel clang cmake gawk gcc gcc-c++ libdispatch libicu-devel \
-      libtool libxml2-devel openssl-devel uuid-devel yasm gpg && \
-    git clone --progress https://github.com/tpoechtrager/osxcross && \
-    cd /root/osxcross && \
-    # Latest commit from main branch (matches Dockerfile.osx).
-    git checkout e6ab3fa7423f9235ce9ed6381d6d3af191b46b59 && \
-    patch -p1 < /root/files/patches/osxcross-add-sdk-26.patch && \
-    ln -s /root/files/MacOSX${APPLE_SDKV}.sdk.tar.xz /root/osxcross/tarballs && \
-    UNATTENDED=1 SDK_VERSION=${APPLE_SDKV} ./build.sh && \
-    rm -rf /root/osxcross/build
-
-ENV OSXCROSS_ROOT=/root/osxcross
+# OSXCROSS_ROOT is retained ONLY as the signal that tells Godot's
+# platform/macos/detect.py this is a Linux cross-compile (can_build() and the
+# env["osxcross"] gate). No osxcross toolchain is installed; the value is a
+# sentinel and is never dereferenced as a path.
+ENV OSXCROSS_ROOT=1
 
 # -----------------------------------------------------------------------------
 # Stage: xcode-tree — Xcode Developer tree (SDKs + Toolchains from Xcode.xip)
@@ -96,7 +83,7 @@ ENV OSXCROSS_ROOT=/root/osxcross
 #     (libclang_rt.osx.a, libclang_rt.ios.a, libclang_rt.tvos.a,
 #     libclang_rt.xros.a, …)
 
-FROM osxcross AS xcode-tree
+FROM base AS xcode-tree
 
 ENV XCODE_SDKV=26.6
 
@@ -119,8 +106,8 @@ RUN mkdir -p /root/Xcode.app/Contents/Developer && \
 FROM xcode-tree AS swift
 
 # Swift toolchain version: the swiftly identifier, which is also the installed
-# toolchain directory name that build-<platform>/build.sh composes into
-# SWIFT_COMPILER. Override to build an experimental image, e.g.
+# toolchain directory name that build-<platform>/build.sh composes into the
+# Swift compiler path. Override to build an experimental image, e.g.
 #   --build-arg swift_version=6.4.x-snapshot-2026-06-11
 # The default tracks the production release.
 ARG swift_version=6.3.2
@@ -136,7 +123,7 @@ RUN curl -O https://download.swift.org/swiftly/linux/swiftly-1.1.2-$(uname -m).t
     hash -r
 
 # -----------------------------------------------------------------------------
-# Stage: final — darwin-tools, PATH, SDK bundle, detect gates, shims, patches
+# Stage: final — darwin-tools, PATH, SDK bundle, shims, patches, build ENV
 # -----------------------------------------------------------------------------
 
 FROM swift AS final
@@ -169,10 +156,9 @@ RUN mkdir -p /opt/darwin-tools && \
 #   1. /opt/darwin-tools/bin FIRST — clang's `-fuse-ld=lld` looks for
 #      ld.lld/ld64.lld relative to clang's own bin dir, then PATH.
 #      Prepending /opt/darwin-tools/bin ensures the Apple-enabled
-#      ld64.lld wins over swiftly's platform-disabled one. (Clang's
-#      relative-search would still find swiftly's first; the definitive
-#      override is `-B /opt/darwin-tools/bin` at link-time, but keeping
-#      this on PATH helps scripts that invoke ld64.lld directly.)
+#      ld64.lld wins over swiftly's platform-disabled one. (The definitive
+#      override is `-B /opt/darwin-tools/bin` at link-time, but keeping this
+#      on PATH helps scripts that invoke ld64.lld directly.)
 #
 #   2. swiftly toolchains/${SWIFT_VERSION}/usr/bin — the REAL toolchain
 #      binaries (clang, clang++, swiftc, swift-frontend, llvm-*). Must come
@@ -186,13 +172,10 @@ RUN mkdir -p /opt/darwin-tools && \
 #   3. /root/.local/share/swiftly/bin — the swiftly dispatcher, kept on PATH
 #      for the `swiftly` command itself and any tool not present in (2).
 #
-#   4. /root/osxcross/target/bin LAST — cctools-port binutils
-#      (lipo, otool, *-apple-darwin25.x-ar, etc.).
-#
-# Standard /usr/bin comes after those, so any accidental fallback to
-# Fedora's host binutils is unlikely.
+# Standard /usr/local/bin (where `lipo` lives) and /usr/bin come after those,
+# via the inherited ${PATH}.
 
-ENV PATH="/opt/darwin-tools/bin:/root/.local/share/swiftly/toolchains/${SWIFT_VERSION}/usr/bin:/root/.local/share/swiftly/bin:/root/osxcross/target/bin:${PATH}"
+ENV PATH="/opt/darwin-tools/bin:/root/.local/share/swiftly/toolchains/${SWIFT_VERSION}/usr/bin:/root/.local/share/swiftly/bin:${PATH}"
 
 # -----------------------------------------------------------------------------
 # Swift SDK bundle — for `swift build --swift-sdk darwin-*` workflows.
@@ -229,17 +212,16 @@ ENV OSXCROSS_APPLEEMBEDDED=not_nothing
 #   apple_target_triple=<prefix>-apple-darwin11-
 # inherited from the old cctools-port wrapper layout.
 #
-# This image has no cctools wrappers (iOS/tvOS/visionOS are static-archive
-# builds that only need clang + llvm-ar, not a linker). We satisfy the
-# path composition with plain symlinks to swiftly's real binaries. When
-# clang is invoked as `arm-apple-darwin11-clang` it infers a triple of
-# `arm-apple-darwin11`, but scons also passes `-arch arm64` and
-# `-mtargetos=<platform><ver>`, which override the argv[0]-derived target
-# and produce the real arm64-apple-{ios,tvos,xros} triple.
+# iOS/tvOS/visionOS are static-archive builds that only need clang + llvm-ar,
+# not a linker. We satisfy the path composition with plain symlinks to
+# swiftly's real binaries. When clang is invoked as `arm-apple-darwin11-clang`
+# it infers a triple of `arm-apple-darwin11`, but scons also passes
+# `-arch arm64` and `-mtargetos=<platform><ver>`, which override the
+# argv[0]-derived target and produce the real arm64-apple-{ios,tvos,xros} triple.
 #
 # These shims are transitional: they go away once Godot's scons invokes
 # clang directly without the APPLE_TOOLCHAIN_PATH composition.
-
+#
 # Point shims at the real toolchain binaries rather than swiftly's /bin
 # entries — those `bin/` entries are symlinks to the `swiftly` dispatcher,
 # which reads argv[0] to decide which tool to exec. An argv[0] of
@@ -277,5 +259,24 @@ RUN chmod +x /root/patch-visionos-sdk.sh && \
     . "${SWIFTLY_HOME_DIR:-$HOME/.local/share/swiftly}/env.sh" && \
     /root/patch-visionos-sdk.sh && \
     rm /root/patch-visionos-sdk.sh
+
+# -----------------------------------------------------------------------------
+# Build-script configuration (consumed by build-macos/build.sh)
+# -----------------------------------------------------------------------------
+#
+# Image-specific values kept out of the build scripts (see PR #159 review,
+# discussion r3563940169): the scripts read these from the environment with an
+# empty fallback, so the image owns the SDK/toolchain paths that move between
+# versions.
+#
+#   MACOS_SDK_PATH   — macOS SDK sysroot. The unversioned Xcode symlink, so it
+#                      follows whatever MacOSX SDK the Xcode tree ships.
+#   EXTRA_LINK_FLAGS — macOS link flags that reference image paths/versions:
+#                      Apple-enabled ld64.lld from darwin-tools (-fuse-ld=lld
+#                      -B), and Xcode's compiler-rt (libclang_rt.osx, providing
+#                      __isPlatformVersionAtLeast for `@available`). The clang
+#                      resource dir version (21) tracks the Xcode toolchain.
+ENV MACOS_SDK_PATH="/root/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+ENV EXTRA_LINK_FLAGS="-fuse-ld=lld -B /opt/darwin-tools/bin -L/root/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/21/lib/darwin -lclang_rt.osx"
 
 CMD /bin/bash
