@@ -1,18 +1,23 @@
 ARG img_version
 FROM godot-fedora:${img_version}
 
+# Keep NDK, JDK, build-tools and platforms in sync with Godot's
+# `platform/android/java/app/config.gradle`.
+
 ENV ANDROID_SDK_ROOT=/root/sdk
-ENV ANDROID_NDK_VERSION=28.1.13356709
+ENV ANDROID_NDK_VERSION=29.0.14206865
 ENV ANDROID_NDK_ROOT=${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}
 
 RUN dnf -y install --setopt=install_weak_deps=False \
-      java-21-openjdk-devel ncurses-compat-libs && \
+      adoptium-temurin-java-repository ncurses-compat-libs && \
+    dnf -y install --setopt=install_weak_deps=False \
+      --enablerepo=adoptium-temurin-java-repository temurin-17-jdk && \
     mkdir -p sdk && cd sdk && \
-    export CMDLINETOOLS=commandlinetools-linux-13114758_latest.zip && \
+    export CMDLINETOOLS=commandlinetools-linux-14742923_latest.zip && \
     curl -LO https://dl.google.com/android/repository/${CMDLINETOOLS} && \
     unzip ${CMDLINETOOLS} && \
     rm ${CMDLINETOOLS} && \
     yes | cmdline-tools/bin/sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" --licenses && \
-    cmdline-tools/bin/sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" "ndk;${ANDROID_NDK_VERSION}" 'cmdline-tools;latest' 'build-tools;35.0.1' 'platforms;android-35' 'cmake;3.31.6'
+    cmdline-tools/bin/sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" "ndk;${ANDROID_NDK_VERSION}" 'cmdline-tools;latest' 'build-tools;36.1.0' 'platforms;android-36' 'cmake;3.31.6'
 
 CMD /bin/bash
