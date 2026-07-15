@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
+#
+# Extracts the macOS SDK and Xcode Developer directory from an Xcode .xip and
+# packs them into versioned .tar.xz archives in OUT_DIR.
+#
+# Normally run during the Docker build (EXTRACT_FROM_XIP=1), which unpacks the
+# .xip first and enables both SDKs by default. Run manually with EXTRACT_FROM_XIP=0
+# against an existing Xcode.app, then set EXTRACT_MACOS=1 and/or EXTRACT_XCODE=1
+# to pick what gets packed.
+#
+# Key env vars:
+#   XCODE_SDKV    - Xcode version, used in .xip filename and Xcode archive name (required)
+#   APPLE_SDKV    - macOS SDK version, used in the SDK archive name
+#   XCODE_APP_PATH, XCODE_XIP_PATH, OUT_DIR - paths (see defaults below)
 
 set -euo pipefail
 
@@ -19,8 +32,14 @@ APPLE_SDKV="${APPLE_SDKV:-}"
 if [[ "$EXTRACT_FROM_XIP" == "1" ]]; then
   mkdir -p /root/xcode
   cd /root/xcode
-  xar -xf "$XCODE_XIP_PATH"
+  # Fedora's Apple `xar 1.8` (417.1) fails to open Apple's signed Xcode .xip
+  # ("Error opening xar archive"): the RSA <signature> element in the TOC trips
+  # xar_open. The .xip is still a valid xar, and its "Content" member is stored
+  # uncompressed (application/octet-stream) -- it is exactly the pbzx stream. So
+  # we extract Content directly, bypassing xar, then feed it to pbzx as before.
+  python3 /root/files/xip_extract_content.py "$XCODE_XIP_PATH" Content Content
   /root/pbzx/pbzx -n Content | cpio -i
+  rm -f Content
   XCODE_APP_PATH="/root/xcode/Xcode.app"
 fi
 

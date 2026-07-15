@@ -21,5 +21,4 @@ fi
 "$podman" push godot-xcode:${img_version} ${registry}/godot/xcode
 
 "$podman" push godot-android:${img_version} ${registry}/godot-private/android
-"$podman" push godot-osx:${img_version} ${registry}/godot-private/macosx
-"$podman" push godot-appleembedded:${img_version} ${registry}/godot-private/appleembedded
+"$podman" push godot-apple:${img_version} ${registry}/godot-private/apple
