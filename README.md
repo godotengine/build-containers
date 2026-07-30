@@ -91,5 +91,5 @@ These are the toolchains currently in use for Godot 4.3 and later:
   * arm64: llvm-mingw 20260616, LLVM 22.1.8
 - Web: Emscripten 4.0.20
 - Android: Android NDK 29.0.14206865, build-tools 36.1.0, platform android-36, CMake 3.31.6, JDK 21
-- Apple: Xcode 26.6 with LLVM 21.1.6, Swift 6.3.2, Swiftly 1.1.2
+- Apple: Xcode 26.6 with LLVM 21.1.6, Swift 6.3.3, Swiftly 1.1.3
   * SDKs: MacOSX, iPhoneOS, iPhoneSimulator, AppleTVOS, AppleTVSimulator, XROS, XRSimulator

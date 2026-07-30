@@ -85,6 +85,7 @@ ENV APPLE_LLVM_CROSS=1
 FROM base AS xcode-tree
 
 ENV XCODE_SDKV=26.6
+ENV APPLE_SDKV=26.5
 
 RUN mkdir -p /root/Xcode.app/Contents/Developer && \
     cd /root/Xcode.app/Contents/Developer && \
@@ -109,13 +110,14 @@ FROM xcode-tree AS swift
 # Swift compiler path. Override to build an experimental image, e.g.
 #   --build-arg swift_version=6.4.x-snapshot-2026-06-11
 # The default tracks the production release.
-ARG swift_version=6.3.2
+ARG swift_version=6.3.3
 ENV SWIFT_VERSION=${swift_version}
+ENV SWIFT_COMPILER=/root/.local/share/swiftly/toolchains/${SWIFT_VERSION}/usr/bin/swiftc
 
-# swiftly 1.1.2 pinned: required to resolve newer toolchain branches such as
+# swiftly 1.1.3 pinned: required to resolve newer toolchain branches such as
 # `6.4.x-snapshot` (older swiftly's version resolver 404s on them).
-RUN curl -O https://download.swift.org/swiftly/linux/swiftly-1.1.2-$(uname -m).tar.gz && \
-    tar zxf swiftly-1.1.2-$(uname -m).tar.gz && \
+RUN curl -O https://download.swift.org/swiftly/linux/swiftly-1.1.3-$(uname -m).tar.gz && \
+    tar zxf swiftly-1.1.3-$(uname -m).tar.gz && \
     ./swiftly init --platform ubi9 --quiet-shell-followup --skip-install -y && \
     ~/.local/share/swiftly/bin/swiftly install ${SWIFT_VERSION} && \
     . "${SWIFTLY_HOME_DIR:-$HOME/.local/share/swiftly}/env.sh" && \
@@ -137,7 +139,7 @@ FROM swift AS final
 #   * libtool   — llvm-libtool-darwin (Darwin-format static archiver)
 #
 # Pinned to v1.0.1 (Dec 2024, LLD 20 from swiftlang/llvm-project).
-# Known limitation: LLD 20 cannot encode arm64e pauth relocations in
+# Known limitation: LLD 20 cannot encode arm64e path relocations in
 # __cfstring sections, so it can't link arm64e executables. It links
 # arm64 (macOS/iOS/tvOS/visionOS) and arm64e static archives fine —
 # the archive path doesn't involve lld at all.
@@ -192,13 +194,11 @@ RUN /root/files/swift/create-sdk-bundle.sh /root/Xcode.app/Contents/Developer /r
 #
 # platform/{ios,tvos,visionos}/detect.py returns True from can_build()
 # when the corresponding OSXCROSS_* env var is set. Value is arbitrary
-# (non-empty). OSXCROSS_APPLEEMBEDDED is referenced by the embedded
-# drivers for similar gates.
+# (non-empty).
 
 ENV OSXCROSS_IOS=not_nothing
 ENV OSXCROSS_TVOS=not_nothing
 ENV OSXCROSS_VISIONOS=not_nothing
-ENV OSXCROSS_APPLEEMBEDDED=not_nothing
 
 # -----------------------------------------------------------------------------
 # ioscross-compatibility shims
