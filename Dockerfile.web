@@ -1,7 +1,7 @@
 ARG img_version
 FROM godot-fedora:${img_version}
 
-ENV EMSCRIPTEN_VERSION=4.0.20
+ENV EMSCRIPTEN_VERSION=6.0.1
 
 RUN dnf -y install --setopt=install_weak_deps=False libatomic && \
     git clone --branch ${EMSCRIPTEN_VERSION} --progress https://github.com/emscripten-core/emsdk && \
