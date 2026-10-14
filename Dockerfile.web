@@ -8,4 +8,4 @@ RUN dnf -y install --setopt=install_weak_deps=False libatomic && \
     emsdk/emsdk install ${EMSCRIPTEN_VERSION} && \
     emsdk/emsdk activate ${EMSCRIPTEN_VERSION}
 
-CMD /bin/bash
+CMD ["/bin/bash"]

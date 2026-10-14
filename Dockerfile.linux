@@ -33,4 +33,4 @@ RUN dnf install -y wayland-devel && \
     cd arm-godot-linux-gnueabihf_sdk-buildroot && \
     ./relocate-sdk.sh
 
-CMD /bin/bash
+CMD ["/bin/bash"]

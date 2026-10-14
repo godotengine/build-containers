@@ -10,4 +10,4 @@ RUN dnf -y install --setopt=install_weak_deps=False \
       dotnet-sdk-10.0 && \
     pip install scons==4.10.1
 
-CMD /bin/bash
+CMD ["/bin/bash"]

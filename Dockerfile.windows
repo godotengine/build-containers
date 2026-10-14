@@ -11,4 +11,4 @@ RUN dnf -y install --setopt=install_weak_deps=False \
     rm -f ${LLVM_MINGW_NAME}.tar.xz && \
     mv -f ${LLVM_MINGW_NAME} /root/llvm-mingw
 
-CMD /bin/bash
+CMD ["/bin/bash"]
